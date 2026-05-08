@@ -16,6 +16,7 @@ cp .env.example .env
 
 Default database settings:
 
+- `API_PREFIX=api`
 - `CORS_ALLOWED_ORIGINS=http://localhost:3001`
 - `DB_HOST=127.0.0.1`
 - `DB_PORT=5432`
@@ -27,6 +28,8 @@ Default database settings:
 The Nest template uses MikroORM with PostgreSQL and reads its connection settings from the same env file.
 
 `CORS_ALLOWED_ORIGINS` is a comma-separated allowlist used to enable CORS at bootstrap time, for example `http://localhost:3001,http://localhost:5173`.
+
+`API_PREFIX` defines the global route prefix for HTTP endpoints. With the default value, auth routes are exposed under `/api/auth/*` and the health check is available at `/api/health`.
 
 ## Auth Module
 
@@ -63,11 +66,12 @@ Seeded baseline data:
 
 Default auth endpoints:
 
-- `POST /auth/register`
-- `POST /auth/login`
-- `POST /auth/refresh`
-- `POST /auth/logout`
-- `GET /auth/me`
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
+- `GET /api/health`
 
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
