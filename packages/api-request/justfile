@@ -1,0 +1,10 @@
+runner := "bash ./api/auth/scripts/run-auth-hurl.sh"
+
+default:
+  @just --list
+
+run *args:
+  @{{ runner }} run {{ args }}
+
+auth *args:
+  @{{ runner }} {{ args }}
