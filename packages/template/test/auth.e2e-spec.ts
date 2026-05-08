@@ -1,8 +1,17 @@
-import { ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import request from 'supertest';
 import { App } from 'supertest/types';
+import { GlobalExceptionFilter } from '../src/common/filters/global-exception.filter';
+import { RequestLoggingInterceptor } from '../src/common/interceptors/request-logging.interceptor';
+import { parseCorsAllowedOrigins } from '../src/config/cors.config';
+import { AppModule } from '../src/modules/app.module';
+import type {
+  AuthResponse,
+  UserProfile,
+} from '../src/modules/auth/app/auth.types';
 import { createTestDatabase, dropTestDatabase } from './e2e-postgres';
 
 jest.setTimeout(30_000);
@@ -17,6 +26,7 @@ describe('Auth flow (e2e)', () => {
     testDb = await createTestDatabase();
 
     process.env.NODE_ENV = 'test';
+    process.env.API_PREFIX = 'api';
     process.env.DB_HOST = testDb.rootConfig.host;
     process.env.DB_PORT = String(testDb.rootConfig.port);
     process.env.DB_USER = testDb.rootConfig.user;
@@ -28,18 +38,32 @@ describe('Auth flow (e2e)', () => {
     process.env.JWT_REFRESH_TTL = '7d';
     process.env.BCRYPT_SALT_ROUNDS = '4';
 
-    const { AppModule } = require('../src/modules/app.module');
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    const corsAllowedOrigins = parseCorsAllowedOrigins(process.env);
+
+    if (corsAllowedOrigins.length > 0) {
+      app.enableCors({
+        origin: corsAllowedOrigins,
+      });
+    }
+
+    app.enableShutdownHooks();
+    app.setGlobalPrefix(process.env.API_PREFIX ?? 'api');
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
         transform: true,
         forbidNonWhitelisted: true,
       }),
+    );
+    app.useGlobalFilters(new GlobalExceptionFilter());
+    app.useGlobalInterceptors(
+      new ClassSerializerInterceptor(app.get(Reflector)),
+      new RequestLoggingInterceptor(),
     );
     await app.init();
   });
@@ -58,35 +82,37 @@ describe('Auth flow (e2e)', () => {
 
   it('registers, authenticates, refreshes, and revokes a session', async () => {
     const registerResponse = await request(app.getHttpServer())
-      .post('/auth/register')
+      .post('/api/auth/register')
       .send({
         email: 'member@example.com',
         password: 'password123',
         displayName: 'Member User',
       })
       .expect(201);
+    const registerBody = registerResponse.body as unknown as AuthResponse;
 
-    expect(registerResponse.body.accessToken).toEqual(expect.any(String));
-    expect(registerResponse.body.refreshToken).toEqual(expect.any(String));
-    expect(registerResponse.body.user).toMatchObject({
+    expect(registerBody.accessToken).toEqual(expect.any(String));
+    expect(registerBody.refreshToken).toEqual(expect.any(String));
+    expect(registerBody.user).toMatchObject({
       email: 'member@example.com',
       displayName: 'Member User',
       roles: ['member'],
       permissions: [],
     });
-    expect(registerResponse.body.user.id).toEqual(expect.any(String));
-    expect(registerResponse.body.user.sessionId).toEqual(expect.any(String));
+    expect(registerBody.user.id).toEqual(expect.any(String));
+    expect(registerBody.user.sessionId).toEqual(expect.any(String));
 
-    const accessToken = registerResponse.body.accessToken as string;
-    const refreshToken = registerResponse.body.refreshToken as string;
-    const sessionId = registerResponse.body.user.sessionId as string;
+    const accessToken = registerBody.accessToken;
+    const refreshToken = registerBody.refreshToken;
+    const sessionId = registerBody.user.sessionId;
 
     const meResponse = await request(app.getHttpServer())
-      .get('/auth/me')
+      .get('/api/auth/me')
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
+    const meBody = meResponse.body as unknown as UserProfile;
 
-    expect(meResponse.body).toMatchObject({
+    expect(meBody).toMatchObject({
       email: 'member@example.com',
       displayName: 'Member User',
       sessionId,
@@ -95,46 +121,61 @@ describe('Auth flow (e2e)', () => {
     });
 
     const loginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({
         email: 'member@example.com',
         password: 'password123',
       })
       .expect(200);
+    const loginBody = loginResponse.body as unknown as AuthResponse;
 
-    expect(loginResponse.body.user.email).toBe('member@example.com');
-    expect(loginResponse.body.user.sessionId).not.toBe(sessionId);
+    expect(loginBody.user.email).toBe('member@example.com');
+    expect(loginBody.user.sessionId).not.toBe(sessionId);
 
     const refreshResponse = await request(app.getHttpServer())
-      .post('/auth/refresh')
+      .post('/api/auth/refresh')
       .send({ refreshToken })
       .expect(200);
+    const refreshBody = refreshResponse.body as unknown as AuthResponse;
 
-    expect(refreshResponse.body.accessToken).toEqual(expect.any(String));
-    expect(refreshResponse.body.refreshToken).toEqual(expect.any(String));
-    expect(refreshResponse.body.user.email).toBe('member@example.com');
-    expect(refreshResponse.body.user.sessionId).toBe(sessionId);
-    expect(refreshResponse.body.refreshToken).not.toBe(refreshToken);
+    expect(refreshBody.accessToken).toEqual(expect.any(String));
+    expect(refreshBody.refreshToken).toEqual(expect.any(String));
+    expect(refreshBody.user.email).toBe('member@example.com');
+    expect(refreshBody.user.sessionId).toBe(sessionId);
+    expect(refreshBody.refreshToken).not.toBe(refreshToken);
 
     await request(app.getHttpServer())
-      .post('/auth/refresh')
+      .post('/api/auth/refresh')
       .send({ refreshToken })
       .expect(401);
 
     await request(app.getHttpServer())
-      .post('/auth/logout')
-      .set('Authorization', `Bearer ${refreshResponse.body.accessToken as string}`)
+      .post('/api/auth/logout')
+      .set('Authorization', `Bearer ${refreshBody.accessToken}`)
       .expect(204);
 
     await request(app.getHttpServer())
-      .get('/auth/me')
-      .set('Authorization', `Bearer ${refreshResponse.body.accessToken as string}`)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${refreshBody.accessToken}`)
       .expect(401);
 
     await request(app.getHttpServer())
-      .post('/auth/refresh')
-      .send({ refreshToken: refreshResponse.body.refreshToken as string })
+      .post('/api/auth/refresh')
+      .send({ refreshToken: refreshBody.refreshToken })
       .expect(401);
+  });
+
+  it('exposes a health endpoint under the global API prefix', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/health')
+      .expect(200);
+    const responseBody = response.body as unknown as {
+      status: string;
+      timestamp: string;
+    };
+
+    expect(responseBody.status).toBe('ok');
+    expect(responseBody.timestamp).toEqual(expect.any(String));
   });
 });
 

@@ -3,11 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import {
-  AuthResponse,
-  LoginUserInput,
-  RequestMetadata,
-} from '../auth.types';
+import { AuthResponse, LoginUserInput, RequestMetadata } from '../auth.types';
 import { UserStatus } from '../../domain/enums/user-status.enum';
 import { Email } from '../../domain/value-objects/email';
 import { PasswordHasher } from '../ports/password-hasher';

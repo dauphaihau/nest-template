@@ -4,16 +4,18 @@ import { AuthSessionRepository } from '../ports/auth-session.repository';
 
 @Injectable()
 export class LogoutUseCase {
-  constructor(
-    private readonly authSessionRepository: AuthSessionRepository,
-  ) {}
+  constructor(private readonly authSessionRepository: AuthSessionRepository) {}
 
   async execute(currentUser: AuthenticatedUser): Promise<void> {
     const session = await this.authSessionRepository.findById(
       currentUser.sessionId,
     );
 
-    if (!session || session.userId !== currentUser.userId || session.revokedAt) {
+    if (
+      !session ||
+      session.userId !== currentUser.userId ||
+      session.revokedAt
+    ) {
       return;
     }
 

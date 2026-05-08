@@ -115,16 +115,12 @@ export class MikroOrmAuthUserRepository implements AuthUserRepository {
       .sort((left, right) => left.toString().localeCompare(right.toString()));
     const permissions = Array.from(
       new Map(
-        user.userRoles
-          .getItems()
-          .flatMap((userRole) =>
-            userRole.role.rolePermissions
-              .getItems()
-              .map((rolePermission) => {
-                const key = PermissionKey.create(rolePermission.permission.key);
-                return [key.toString(), key] as const;
-              }),
-          ),
+        user.userRoles.getItems().flatMap((userRole) =>
+          userRole.role.rolePermissions.getItems().map((rolePermission) => {
+            const key = PermissionKey.create(rolePermission.permission.key);
+            return [key.toString(), key] as const;
+          }),
+        ),
       ).values(),
     ).sort((left, right) => left.toString().localeCompare(right.toString()));
 

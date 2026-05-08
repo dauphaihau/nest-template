@@ -3,8 +3,8 @@ import { AuthenticatedUser, UserProfile } from '../auth.types';
 
 @Injectable()
 export class GetCurrentUserUseCase {
-  async execute(currentUser: AuthenticatedUser): Promise<UserProfile> {
-    return {
+  execute(currentUser: AuthenticatedUser): Promise<UserProfile> {
+    return Promise.resolve({
       id: currentUser.userId,
       email: currentUser.email,
       displayName: currentUser.displayName,
@@ -12,6 +12,6 @@ export class GetCurrentUserUseCase {
       sessionId: currentUser.sessionId,
       roles: currentUser.roles,
       permissions: currentUser.permissions,
-    };
+    });
   }
 }

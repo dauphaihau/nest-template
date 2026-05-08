@@ -13,7 +13,5 @@ export abstract class AuthTokenService {
   abstract verifyRefreshToken(
     token: string,
   ): Promise<(RefreshTokenPayload & { exp: number }) | null>;
-  abstract verifyAccessToken(
-    token: string,
-  ): Promise<AccessTokenPayload | null>;
+  abstract verifyAccessToken(token: string): Promise<AccessTokenPayload | null>;
 }

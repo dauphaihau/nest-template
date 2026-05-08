@@ -39,7 +39,10 @@ export class AuthService {
     return this.loginUseCase.execute(input, metadata);
   }
 
-  refresh(refreshToken: string, metadata: RequestMetadata): Promise<AuthResponse> {
+  refresh(
+    refreshToken: string,
+    metadata: RequestMetadata,
+  ): Promise<AuthResponse> {
     return this.refreshSessionUseCase.execute(refreshToken, metadata);
   }
 

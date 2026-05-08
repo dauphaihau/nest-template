@@ -32,7 +32,9 @@ export class RefreshSessionUseCase {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const session = await this.authSessionRepository.findById(payload.sessionId);
+    const session = await this.authSessionRepository.findById(
+      payload.sessionId,
+    );
 
     if (!session || session.userId !== payload.sub) {
       throw new UnauthorizedException('Refresh session was not found');

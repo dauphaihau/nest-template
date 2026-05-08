@@ -51,20 +51,17 @@ export class JwtAuthTokenService implements AuthTokenService {
     token: string,
   ): Promise<(RefreshTokenPayload & { exp: number }) | null> {
     try {
-      return await this.jwtService.verifyAsync<RefreshTokenPayload & { exp: number }>(
-        token,
-        {
-          secret: this.authConfig.jwtRefreshSecret,
-        },
-      );
+      return await this.jwtService.verifyAsync<
+        RefreshTokenPayload & { exp: number }
+      >(token, {
+        secret: this.authConfig.jwtRefreshSecret,
+      });
     } catch {
       return null;
     }
   }
 
-  async verifyAccessToken(
-    token: string,
-  ): Promise<AccessTokenPayload | null> {
+  async verifyAccessToken(token: string): Promise<AccessTokenPayload | null> {
     try {
       return await this.jwtService.verifyAsync<AccessTokenPayload>(token, {
         secret: this.authConfig.jwtAccessSecret,

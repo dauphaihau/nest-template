@@ -58,10 +58,10 @@ const authEntities = [
         const authConfig = buildAuthConfig(configService);
 
         return {
-        secret: authConfig.jwtAccessSecret,
-        signOptions: {
-          expiresIn: authConfig.jwtAccessTtlSeconds,
-        },
+          secret: authConfig.jwtAccessSecret,
+          signOptions: {
+            expiresIn: authConfig.jwtAccessTtlSeconds,
+          },
         };
       },
     }),
@@ -72,7 +72,8 @@ const authEntities = [
     {
       provide: AUTH_CONFIG,
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => buildAuthConfig(configService),
+      useFactory: (configService: ConfigService) =>
+        buildAuthConfig(configService),
     },
     {
       provide: AuthUserRepository,
