@@ -3,7 +3,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from '../src/modules/app.module';
 import { createTestDatabase, dropTestDatabase } from './e2e-postgres';
 
 jest.setTimeout(30_000);
@@ -29,6 +28,7 @@ describe('Auth flow (e2e)', () => {
     process.env.JWT_REFRESH_TTL = '7d';
     process.env.BCRYPT_SALT_ROUNDS = '4';
 
+    const { AppModule } = require('../src/modules/app.module');
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();

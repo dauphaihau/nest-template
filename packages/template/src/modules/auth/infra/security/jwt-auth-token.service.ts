@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AUTH_CONFIG } from '../../../../config/auth.config';
@@ -36,6 +37,7 @@ export class JwtAuthTokenService implements AuthTokenService {
     const payload: RefreshTokenPayload = {
       sub: input.userId,
       sessionId: input.sessionId,
+      jti: randomUUID(),
       type: 'refresh',
     };
 

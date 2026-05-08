@@ -53,13 +53,17 @@ const authEntities = [
     ConfigModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
-      inject: [AUTH_CONFIG],
-      useFactory: (authConfig: ReturnType<typeof buildAuthConfig>) => ({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const authConfig = buildAuthConfig(configService);
+
+        return {
         secret: authConfig.jwtAccessSecret,
         signOptions: {
           expiresIn: authConfig.jwtAccessTtlSeconds,
         },
-      }),
+        };
+      },
     }),
     MikroOrmModule.forFeature(authEntities),
   ],
