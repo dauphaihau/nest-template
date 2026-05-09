@@ -1,5 +1,5 @@
 import { ConfigService } from '@nestjs/config';
-import { parseDurationToSeconds } from './parse-duration';
+import { parseDurationToSeconds } from '../libs/duration';
 
 export interface AuthConfig {
   jwtAccessSecret: string;

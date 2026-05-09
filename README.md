@@ -45,6 +45,7 @@ Run API request flows:
 just api-health
 just api-request-run api/auth/register.hurl
 just api-auth test-all
+just api-auth test-rate-limit
 ```
 
 Run template tests:

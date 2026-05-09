@@ -16,6 +16,8 @@ import { createTestDatabase, dropTestDatabase } from './e2e-postgres';
 
 jest.setTimeout(30_000);
 
+const expectedMemberPermissions = ['auth.me.read', 'auth.session.manage'];
+
 describe('Auth flow (e2e)', () => {
   let app: INestApplication<App>;
   let originalEnv: NodeJS.ProcessEnv;
@@ -43,6 +45,7 @@ describe('Auth flow (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.getHttpAdapter().getInstance().set('trust proxy', true);
     const corsAllowedOrigins = parseCorsAllowedOrigins(process.env);
 
     if (corsAllowedOrigins.length > 0) {
@@ -81,10 +84,12 @@ describe('Auth flow (e2e)', () => {
   });
 
   it('registers, authenticates, refreshes, and revokes a session', async () => {
+    const email = `member-${Date.now()}@example.com`;
+
     const registerResponse = await request(app.getHttpServer())
       .post('/api/auth/register')
       .send({
-        email: 'member@example.com',
+        email,
         password: 'password123',
         displayName: 'Member User',
       })
@@ -94,10 +99,10 @@ describe('Auth flow (e2e)', () => {
     expect(registerBody.accessToken).toEqual(expect.any(String));
     expect(registerBody.refreshToken).toEqual(expect.any(String));
     expect(registerBody.user).toMatchObject({
-      email: 'member@example.com',
+      email,
       displayName: 'Member User',
       roles: ['member'],
-      permissions: [],
+      permissions: expectedMemberPermissions,
     });
     expect(registerBody.user.id).toEqual(expect.any(String));
     expect(registerBody.user.sessionId).toEqual(expect.any(String));
@@ -113,23 +118,23 @@ describe('Auth flow (e2e)', () => {
     const meBody = meResponse.body as unknown as UserProfile;
 
     expect(meBody).toMatchObject({
-      email: 'member@example.com',
+      email,
       displayName: 'Member User',
       sessionId,
       roles: ['member'],
-      permissions: [],
+      permissions: expectedMemberPermissions,
     });
 
     const loginResponse = await request(app.getHttpServer())
       .post('/api/auth/login')
       .send({
-        email: 'member@example.com',
+        email,
         password: 'password123',
       })
       .expect(200);
     const loginBody = loginResponse.body as unknown as AuthResponse;
 
-    expect(loginBody.user.email).toBe('member@example.com');
+    expect(loginBody.user.email).toBe(email);
     expect(loginBody.user.sessionId).not.toBe(sessionId);
 
     const refreshResponse = await request(app.getHttpServer())
@@ -140,7 +145,7 @@ describe('Auth flow (e2e)', () => {
 
     expect(refreshBody.accessToken).toEqual(expect.any(String));
     expect(refreshBody.refreshToken).toEqual(expect.any(String));
-    expect(refreshBody.user.email).toBe('member@example.com');
+    expect(refreshBody.user.email).toBe(email);
     expect(refreshBody.user.sessionId).toBe(sessionId);
     expect(refreshBody.refreshToken).not.toBe(refreshToken);
 
@@ -176,6 +181,93 @@ describe('Auth flow (e2e)', () => {
 
     expect(responseBody.status).toBe('ok');
     expect(responseBody.timestamp).toEqual(expect.any(String));
+  });
+
+  it('applies stricter route-specific rate limits for register, login, and refresh', async () => {
+    const registerIp = '203.0.113.10';
+    const registerEmailPrefix = `rate-limit-register-${Date.now()}`;
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      await request(app.getHttpServer())
+        .post('/api/auth/register')
+        .set('X-Forwarded-For', registerIp)
+        .send({
+          email: `${registerEmailPrefix}-${attempt}@example.com`,
+          password: 'password123',
+          displayName: `Register Attempt ${attempt + 1}`,
+        })
+        .expect(201);
+    }
+
+    const blockedRegisterResponse = await request(app.getHttpServer())
+      .post('/api/auth/register')
+      .set('X-Forwarded-For', registerIp)
+      .send({
+        email: `${registerEmailPrefix}-blocked@example.com`,
+        password: 'password123',
+        displayName: 'Blocked Register Attempt',
+      })
+      .expect(429);
+
+    expect(blockedRegisterResponse.body).toMatchObject({
+      statusCode: 429,
+      error: 'ThrottlerException',
+      message: 'Too many requests.',
+    });
+
+    const loginIp = '203.0.113.11';
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .set('X-Forwarded-For', loginIp)
+        .send({
+          email: 'missing-user@example.com',
+          password: 'password123',
+        })
+        .expect(401);
+    }
+
+    const blockedLoginResponse = await request(app.getHttpServer())
+      .post('/api/auth/login')
+      .set('X-Forwarded-For', loginIp)
+      .send({
+        email: 'missing-user@example.com',
+        password: 'password123',
+      })
+      .expect(429);
+
+    expect(blockedLoginResponse.body).toMatchObject({
+      statusCode: 429,
+      error: 'ThrottlerException',
+      message: 'Too many requests.',
+    });
+
+    const refreshIp = '203.0.113.12';
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      await request(app.getHttpServer())
+        .post('/api/auth/refresh')
+        .set('X-Forwarded-For', refreshIp)
+        .send({
+          refreshToken: 'invalid-refresh-token-value-1234567890',
+        })
+        .expect(401);
+    }
+
+    const blockedRefreshResponse = await request(app.getHttpServer())
+      .post('/api/auth/refresh')
+      .set('X-Forwarded-For', refreshIp)
+      .send({
+        refreshToken: 'invalid-refresh-token-value-1234567890',
+      })
+      .expect(429);
+
+    expect(blockedRefreshResponse.body).toMatchObject({
+      statusCode: 429,
+      error: 'ThrottlerException',
+      message: 'Too many requests.',
+    });
   });
 });
 

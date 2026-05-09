@@ -6,6 +6,7 @@ import { buildDatabaseConfig } from '../config/database.config';
 import { AuthModule } from './domains/auth/auth.module';
 import { HealthModule } from './domains/health/health.module';
 import { MailModule } from './infra/mail/mail.module';
+import { RateLimitModule } from './infra/rate-limit/rate-limit.module';
 import { StorageModule } from './infra/storage/storage.module';
 
 @Module({
@@ -14,13 +15,14 @@ import { StorageModule } from './infra/storage/storage.module';
       isGlobal: true,
       validate: validateAppEnv,
     }),
+
+    // infra
     MikroOrmModule.forRoot({
       ...buildDatabaseConfig(process.env),
       autoLoadEntities: true,
     }),
-
-    // infra
     MailModule,
+    RateLimitModule,
     StorageModule,
 
     // domains

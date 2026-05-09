@@ -23,6 +23,12 @@ access_token=""
 verbose="false"
 file=""
 collect_display_name="false"
+register_email_prefix=""
+missing_user_email=""
+register_ip="203.0.113.10"
+login_ip="203.0.113.11"
+refresh_ip="203.0.113.12"
+invalid_refresh_token="invalid-refresh-token-value-1234567890"
 
 for arg in "$@"; do
   case "$arg" in
@@ -94,6 +100,16 @@ run_hurl() {
   )
 }
 
+ensure_rate_limit_variables() {
+  if [[ -z "$register_email_prefix" ]]; then
+    register_email_prefix="rate-limit-$(uuidgen | tr 'A-Z' 'a-z')"
+  fi
+
+  if [[ -z "$missing_user_email" ]]; then
+    missing_user_email="missing-$(uuidgen | tr 'A-Z' 'a-z')@example.com"
+  fi
+}
+
 case "$command" in
   run)
     if [[ -z "$file" ]]; then
@@ -114,6 +130,18 @@ case "$command" in
       --variable "email=$email" \
       --variable "password=$password" \
       --variable "display_name=$display_name"
+    ;;
+  test-rate-limit)
+    ensure_rate_limit_variables
+    run_hurl \
+      "api/auth/flows/rate-limit.hurl" \
+      --variable "password=$password" \
+      --variable "register_email_prefix=$register_email_prefix" \
+      --variable "missing_user_email=$missing_user_email" \
+      --variable "register_ip=$register_ip" \
+      --variable "login_ip=$login_ip" \
+      --variable "refresh_ip=$refresh_ip" \
+      --variable "invalid_refresh_token=$invalid_refresh_token"
     ;;
   register)
     if [[ -z "$email" ]]; then

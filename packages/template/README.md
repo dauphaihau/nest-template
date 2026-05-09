@@ -1,8 +1,8 @@
-## Local Postgres
+## Local Infrastructure
 
-The repository includes a local Postgres service in [`infra/docker-compose.yml`](/Volumes/Local/dev/pj-personal/templates/api/nest-template/infra/docker-compose.yml).
+The repository includes local Postgres, MinIO, and Redis services in [`infra/docker-compose.yml`](/Volumes/Local/dev/pj-personal/templates/api/nest-template/infra/docker-compose.yml).
 
-Start the database:
+Start the local services:
 
 ```bash
 docker compose -f ../../infra/docker-compose.yml up -d
@@ -23,7 +23,11 @@ Default database settings:
 - `DB_USER=postgres`
 - `DB_PASSWORD=postgres`
 - `DB_NAME=app`
+- `REDIS_URL=redis://127.0.0.1:6379`
 - `BCRYPT_SALT_ROUNDS=12`
+- `RATE_LIMIT_LIMIT=20`
+- `RATE_LIMIT_TTL=60s`
+- `RATE_LIMIT_BLOCK_DURATION=60s`
 - `MAIL_DRIVER=logger`
 - `MAIL_DEFAULT_FROM_EMAIL=noreply@example.com`
 - `MAIL_DEFAULT_FROM_NAME=Nest Template`
@@ -64,6 +68,12 @@ Supported storage drivers:
 `STORAGE_LOCAL_ROOT` controls where files are written on disk.
 
 `STORAGE_PUBLIC_BASE_URL` is optional and is used to build stable public URLs for stored objects.
+
+## Rate Limit Module
+
+The template includes a reusable rate-limit infrastructure module in [src/modules/infra/rate-limit](/Volumes/Local/dev/pj-personal/templates/api/nest-template/packages/template/src/modules/infra/rate-limit).
+
+By default it uses Redis-backed storage in non-test environments and applies a global HTTP rate limit through Nest's throttler guard. The health endpoint is excluded so probes and container health checks are not throttled.
 
 Auth/RBAC tables:
 
