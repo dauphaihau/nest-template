@@ -1,9 +1,13 @@
-import {
-  ForbiddenException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AuthResponse, RequestMetadata } from '../auth.types';
+import {
+  InactiveUserError,
+  InvalidRefreshTokenError,
+  RefreshSessionInactiveError,
+  RefreshSessionNotFoundError,
+  RefreshTokenMismatchError,
+  UserNotFoundError,
+} from '../errors/auth-app.error';
 import { UserStatus } from '../../domain/enums/user-status.enum';
 import { AuthSessionRepository } from '../ports/auth-session.repository';
 import { AuthTokenService } from '../ports/auth-token.service';
@@ -29,7 +33,7 @@ export class RefreshSessionUseCase {
       await this.authTokenService.verifyRefreshToken(refreshToken);
 
     if (!payload || payload.type !== 'refresh') {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new InvalidRefreshTokenError();
     }
 
     const session = await this.authSessionRepository.findById(
@@ -37,25 +41,25 @@ export class RefreshSessionUseCase {
     );
 
     if (!session || session.userId !== payload.sub) {
-      throw new UnauthorizedException('Refresh session was not found');
+      throw new RefreshSessionNotFoundError();
     }
 
     if (session.revokedAt || session.expiresAt <= new Date()) {
-      throw new UnauthorizedException('Refresh session is no longer active');
+      throw new RefreshSessionInactiveError();
     }
 
     if (session.refreshTokenHash !== this.tokenHasher.hash(refreshToken)) {
-      throw new UnauthorizedException('Refresh token does not match session');
+      throw new RefreshTokenMismatchError();
     }
 
     const user = await this.authUserRepository.findById(session.userId);
 
     if (!user) {
-      throw new UnauthorizedException('User was not found');
+      throw new UserNotFoundError();
     }
 
     if (user.status !== UserStatus.ACTIVE) {
-      throw new ForbiddenException('User account is not active');
+      throw new InactiveUserError();
     }
 
     return this.issueSessionUseCase.execute(user.id, metadata, session);

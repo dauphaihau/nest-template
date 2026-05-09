@@ -1,9 +1,10 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   AuthResponse,
   RegisterUserInput,
   RequestMetadata,
 } from '../auth.types';
+import { EmailAlreadyRegisteredError } from '../errors/auth-app.error';
 import { UserStatus } from '../../domain/enums/user-status.enum';
 import { Email } from '../../domain/value-objects/email';
 import { PasswordHash } from '../../domain/value-objects/password-hash';
@@ -34,7 +35,7 @@ export class RegisterUseCase {
     const existingUser = await this.authUserRepository.findByEmail(email);
 
     if (existingUser) {
-      throw new ConflictException('Email is already registered');
+      throw new EmailAlreadyRegisteredError();
     }
 
     await this.authUserRepository.ensureRole(defaultRole);

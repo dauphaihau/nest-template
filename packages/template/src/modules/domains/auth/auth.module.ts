@@ -4,7 +4,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AUTH_CONFIG, buildAuthConfig } from '../../../config/auth.config';
-import { AuthService } from './app/auth.service';
 import { AuthSessionRepository } from './app/ports/auth-session.repository';
 import { AuthTokenService } from './app/ports/auth-token.service';
 import { AuthUserRepository } from './app/ports/auth-user.repository';
@@ -20,6 +19,7 @@ import { IssueSessionUseCase } from './app/use-cases/shared/issue-session.use-ca
 import { AuthController } from './api/rest/auth.controller';
 import { JwtAuthGuard } from './api/guard/jwt-auth.guard';
 import { PermissionsGuard } from './api/guard/permissions.guard';
+import { AuthHttpExceptionFilter } from './api/rest/auth-http-exception.filter';
 import { JwtStrategy } from './infra/jwt.strategy';
 import { CurrentUserEntity } from './infra/persistence/entities/current-user.entity';
 import { CurrentUserCredentialEntity } from './infra/persistence/entities/current-user-credential.entity';
@@ -95,7 +95,6 @@ const authEntities = [
       provide: AuthTokenService,
       useClass: JwtAuthTokenService,
     },
-    AuthService,
     RegisterUseCase,
     LoginUseCase,
     RefreshSessionUseCase,
@@ -103,10 +102,11 @@ const authEntities = [
     GetCurrentUserUseCase,
     LoadAuthenticatedUserUseCase,
     IssueSessionUseCase,
+    AuthHttpExceptionFilter,
     JwtStrategy,
     JwtAuthGuard,
     PermissionsGuard,
   ],
-  exports: [AuthService, JwtAuthGuard, PermissionsGuard],
+  exports: [JwtAuthGuard, PermissionsGuard],
 })
 export class AuthModule {}

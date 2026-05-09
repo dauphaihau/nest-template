@@ -1,5 +1,4 @@
-import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
-import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import {
   AuthSessionRepository,
@@ -11,16 +10,13 @@ import { UserSessionEntity } from './entities/user-session.entity';
 
 @Injectable()
 export class MikroOrmAuthSessionRepository implements AuthSessionRepository {
-  constructor(
-    private readonly entityManager: EntityManager,
-    @InjectRepository(UserSessionEntity)
-    private readonly sessionRepository: EntityRepository<UserSessionEntity>,
-    @InjectRepository(CurrentUserEntity)
-    private readonly userRepository: EntityRepository<CurrentUserEntity>,
-  ) {}
+  constructor(private readonly entityManager: EntityManager) {}
 
   async findById(id: string): Promise<UserSession | null> {
-    const session = await this.sessionRepository.findOne(
+    const sessionRepository = this.entityManager
+      .fork()
+      .getRepository(UserSessionEntity);
+    const session = await sessionRepository.findOne(
       { id },
       { populate: ['user'] },
     );
@@ -29,8 +25,11 @@ export class MikroOrmAuthSessionRepository implements AuthSessionRepository {
   }
 
   async create(input: CreateUserSessionInput): Promise<UserSession> {
-    const user = await this.userRepository.findOneOrFail({ id: input.userId });
-    const session = this.sessionRepository.create({
+    const entityManager = this.entityManager.fork();
+    const userRepository = entityManager.getRepository(CurrentUserEntity);
+    const sessionRepository = entityManager.getRepository(UserSessionEntity);
+    const user = await userRepository.findOneOrFail({ id: input.userId });
+    const session = sessionRepository.create({
       user,
       refreshTokenHash: input.refreshTokenHash,
       expiresAt: input.expiresAt,
@@ -38,13 +37,15 @@ export class MikroOrmAuthSessionRepository implements AuthSessionRepository {
       ipAddress: input.ipAddress,
     });
 
-    await this.entityManager.persistAndFlush(session);
+    await entityManager.persistAndFlush(session);
 
     return this.toUserSession(session);
   }
 
   async save(session: UserSession): Promise<void> {
-    const existingSession = await this.sessionRepository.findOneOrFail({
+    const entityManager = this.entityManager.fork();
+    const sessionRepository = entityManager.getRepository(UserSessionEntity);
+    const existingSession = await sessionRepository.findOneOrFail({
       id: session.id,
     });
 
@@ -54,7 +55,7 @@ export class MikroOrmAuthSessionRepository implements AuthSessionRepository {
     existingSession.userAgent = session.userAgent;
     existingSession.ipAddress = session.ipAddress;
 
-    await this.entityManager.flush();
+    await entityManager.flush();
   }
 
   private toUserSession(session: UserSessionEntity): UserSession {

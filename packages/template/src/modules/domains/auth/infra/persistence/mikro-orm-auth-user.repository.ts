@@ -1,5 +1,4 @@
-import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
-import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import {
   AuthUserRepository,
@@ -18,20 +17,11 @@ import { UserRoleEntity } from './entities/user-role.entity';
 
 @Injectable()
 export class MikroOrmAuthUserRepository implements AuthUserRepository {
-  constructor(
-    private readonly entityManager: EntityManager,
-    @InjectRepository(CurrentUserEntity)
-    private readonly userRepository: EntityRepository<CurrentUserEntity>,
-    @InjectRepository(CurrentUserCredentialEntity)
-    private readonly credentialRepository: EntityRepository<CurrentUserCredentialEntity>,
-    @InjectRepository(RoleEntity)
-    private readonly roleRepository: EntityRepository<RoleEntity>,
-    @InjectRepository(UserRoleEntity)
-    private readonly userRoleRepository: EntityRepository<UserRoleEntity>,
-  ) {}
+  constructor(private readonly entityManager: EntityManager) {}
 
   async findByEmail(email: Email): Promise<UserAccount | null> {
-    const user = await this.userRepository.findOne(
+    const userRepository = this.entityManager.fork().getRepository(CurrentUserEntity);
+    const user = await userRepository.findOne(
       { email: email.toString() },
       { populate: ['credential', 'userRoles.role.rolePermissions.permission'] },
     );
@@ -40,7 +30,8 @@ export class MikroOrmAuthUserRepository implements AuthUserRepository {
   }
 
   async findById(id: string): Promise<UserAccount | null> {
-    const user = await this.userRepository.findOne(
+    const userRepository = this.entityManager.fork().getRepository(CurrentUserEntity);
+    const user = await userRepository.findOne(
       { id },
       { populate: ['credential', 'userRoles.role.rolePermissions.permission'] },
     );
@@ -49,13 +40,18 @@ export class MikroOrmAuthUserRepository implements AuthUserRepository {
   }
 
   async create(input: CreateUserAccountInput): Promise<UserAccount> {
-    const user = this.userRepository.create({
+    const entityManager = this.entityManager.fork();
+    const userRepository = entityManager.getRepository(CurrentUserEntity);
+    const credentialRepository = entityManager.getRepository(
+      CurrentUserCredentialEntity,
+    );
+    const user = userRepository.create({
       email: input.email.toString(),
       displayName: input.displayName,
       status: input.status,
       emailVerifiedAt: input.emailVerifiedAt,
     });
-    const credential = this.credentialRepository.create({
+    const credential = credentialRepository.create({
       user,
       passwordHash: input.passwordHash.toString(),
       passwordUpdatedAt: input.passwordUpdatedAt,
@@ -63,17 +59,21 @@ export class MikroOrmAuthUserRepository implements AuthUserRepository {
 
     user.credential = credential;
 
-    await this.entityManager.persistAndFlush([user, credential]);
+    await entityManager.persistAndFlush([user, credential]);
 
     return this.toUserAccount(user);
   }
 
   async assignRole(userId: string, roleKey: RoleKey): Promise<void> {
-    const user = await this.userRepository.findOneOrFail({ id: userId });
-    const role = await this.roleRepository.findOneOrFail({
+    const entityManager = this.entityManager.fork();
+    const userRepository = entityManager.getRepository(CurrentUserEntity);
+    const roleRepository = entityManager.getRepository(RoleEntity);
+    const userRoleRepository = entityManager.getRepository(UserRoleEntity);
+    const user = await userRepository.findOneOrFail({ id: userId });
+    const role = await roleRepository.findOneOrFail({
       key: roleKey.toString(),
     });
-    const existingUserRole = await this.userRoleRepository.findOne({
+    const existingUserRole = await userRoleRepository.findOne({
       user,
       role,
     });
@@ -82,17 +82,19 @@ export class MikroOrmAuthUserRepository implements AuthUserRepository {
       return;
     }
 
-    const userRole = this.userRoleRepository.create({
+    const userRole = userRoleRepository.create({
       user,
       role,
       assignedAt: new Date(),
     });
 
-    await this.entityManager.persistAndFlush(userRole);
+    await entityManager.persistAndFlush(userRole);
   }
 
   async ensureRole(roleDefinition: RoleDefinition): Promise<void> {
-    const existingRole = await this.roleRepository.findOne({
+    const entityManager = this.entityManager.fork();
+    const roleRepository = entityManager.getRepository(RoleEntity);
+    const existingRole = await roleRepository.findOne({
       key: roleDefinition.key.toString(),
     });
 
@@ -100,12 +102,12 @@ export class MikroOrmAuthUserRepository implements AuthUserRepository {
       return;
     }
 
-    const role = this.roleRepository.create({
+    const role = roleRepository.create({
       key: roleDefinition.key.toString(),
       name: roleDefinition.name,
       description: roleDefinition.description,
     });
-    await this.entityManager.persistAndFlush(role);
+    await entityManager.persistAndFlush(role);
   }
 
   private toUserAccount(user: CurrentUserEntity): UserAccount {

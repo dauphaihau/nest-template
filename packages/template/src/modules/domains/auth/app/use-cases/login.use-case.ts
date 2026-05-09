@@ -1,9 +1,9 @@
-import {
-  ForbiddenException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AuthResponse, LoginUserInput, RequestMetadata } from '../auth.types';
+import {
+  InactiveUserError,
+  InvalidCredentialsError,
+} from '../errors/auth-app.error';
 import { UserStatus } from '../../domain/enums/user-status.enum';
 import { Email } from '../../domain/value-objects/email';
 import { PasswordHasher } from '../ports/password-hasher';
@@ -26,11 +26,11 @@ export class LoginUseCase {
     const user = await this.authUserRepository.findByEmail(email);
 
     if (!user?.passwordHash) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new InvalidCredentialsError();
     }
 
     if (user.status !== UserStatus.ACTIVE) {
-      throw new ForbiddenException('User account is not active');
+      throw new InactiveUserError();
     }
 
     const passwordMatches = await this.passwordHasher.matches(
@@ -39,7 +39,7 @@ export class LoginUseCase {
     );
 
     if (!passwordMatches) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new InvalidCredentialsError();
     }
 
     return this.issueSessionUseCase.execute(user.id, metadata);

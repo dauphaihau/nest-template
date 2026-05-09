@@ -1,9 +1,13 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   AuthResponse,
   AuthenticatedUser,
   RequestMetadata,
 } from '../../auth.types';
+import {
+  InactiveUserError,
+  UserNotFoundError,
+} from '../../errors/auth-app.error';
 import { UserStatus } from '../../../domain/enums/user-status.enum';
 import type { UserSession } from '../../../domain/models/user-session';
 import { AuthSessionRepository } from '../../ports/auth-session.repository';
@@ -28,11 +32,11 @@ export class IssueSessionUseCase {
     const user = await this.authUserRepository.findById(userId);
 
     if (!user) {
-      throw new Error('User was not found');
+      throw new UserNotFoundError();
     }
 
     if (user.status !== UserStatus.ACTIVE) {
-      throw new ForbiddenException('User account is not active');
+      throw new InactiveUserError();
     }
 
     const session =

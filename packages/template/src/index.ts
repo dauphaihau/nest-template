@@ -1,22 +1,22 @@
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
+import express from 'express';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { RequestLoggingInterceptor } from './common/interceptors/request-logging.interceptor';
 import { parseCorsAllowedOrigins } from './config/cors.config';
 import { AppModule } from './modules/app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
   const corsAllowedOrigins = parseCorsAllowedOrigins(process.env);
 
-  // Configure cross-cutting HTTP behavior once at bootstrap time.
   if (corsAllowedOrigins.length > 0) {
     app.enableCors({
       origin: corsAllowedOrigins,
     });
   }
-
   app.enableShutdownHooks();
+  app.use(express.json());
   app.setGlobalPrefix(process.env.API_PREFIX ?? 'api');
   app.useGlobalPipes(
     new ValidationPipe({

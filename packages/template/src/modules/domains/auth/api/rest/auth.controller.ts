@@ -5,19 +5,25 @@ import {
   HttpCode,
   Post,
   Req,
+  UseFilters,
   UseGuards,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { parseDurationToMilliseconds } from '../../../../../libs/duration';
-import { AuthService } from '../../app/auth.service';
 import type {
   AuthResponse,
   AuthenticatedUser,
   UserProfile,
 } from '../../app/auth.types';
+import { GetCurrentUserUseCase } from '../../app/use-cases/get-current-user.use-case';
+import { LoginUseCase } from '../../app/use-cases/login.use-case';
+import { LogoutUseCase } from '../../app/use-cases/logout.use-case';
+import { RefreshSessionUseCase } from '../../app/use-cases/refresh-session.use-case';
+import { RegisterUseCase } from '../../app/use-cases/register.use-case';
 import { JwtAuthGuard } from '../guard/jwt-auth.guard';
 import { PermissionsGuard } from '../guard/permissions.guard';
+import { AuthHttpExceptionFilter } from './auth-http-exception.filter';
 import { CurrentUser } from './current-user.decorator';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -42,8 +48,15 @@ const authRouteRateLimits = {
 } as const;
 
 @Controller('auth')
+@UseFilters(AuthHttpExceptionFilter)
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly registerUseCase: RegisterUseCase,
+    private readonly loginUseCase: LoginUseCase,
+    private readonly refreshSessionUseCase: RefreshSessionUseCase,
+    private readonly logoutUseCase: LogoutUseCase,
+    private readonly getCurrentUserUseCase: GetCurrentUserUseCase,
+  ) {}
 
   @Post('register')
   @Throttle({
@@ -53,7 +66,7 @@ export class AuthController {
     @Body() body: RegisterDto,
     @Req() request: Request,
   ): Promise<AuthResponse> {
-    return this.authService.register(body, extractRequestMetadata(request));
+    return this.registerUseCase.execute(body, extractRequestMetadata(request));
   }
 
   @Post('login')
@@ -65,7 +78,7 @@ export class AuthController {
     @Body() body: LoginDto,
     @Req() request: Request,
   ): Promise<AuthResponse> {
-    return this.authService.login(body, extractRequestMetadata(request));
+    return this.loginUseCase.execute(body, extractRequestMetadata(request));
   }
 
   @Post('refresh')
@@ -77,7 +90,7 @@ export class AuthController {
     @Body() body: RefreshTokenDto,
     @Req() request: Request,
   ): Promise<AuthResponse> {
-    return this.authService.refresh(
+    return this.refreshSessionUseCase.execute(
       body.refreshToken,
       extractRequestMetadata(request),
     );
@@ -87,7 +100,7 @@ export class AuthController {
   @HttpCode(204)
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   async logout(@CurrentUser() currentUser: AuthenticatedUser): Promise<void> {
-    await this.authService.logout(currentUser);
+    await this.logoutUseCase.execute(currentUser);
   }
 
   @Get('me')
@@ -95,7 +108,7 @@ export class AuthController {
   async me(
     @CurrentUser() currentUser: AuthenticatedUser,
   ): Promise<UserProfile> {
-    return this.authService.getCurrentUser(currentUser);
+    return this.getCurrentUserUseCase.execute(currentUser);
   }
 }
 

@@ -15,9 +15,13 @@ export class RequestLoggingInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const http = context.switchToHttp();
-    const request = http.getRequest<Request>();
-    const response = http.getResponse<Response>();
+    const request = http.getRequest<Request | undefined>();
+    const response = http.getResponse<Response | undefined>();
     const startedAt = Date.now();
+
+    if (!request || !response) {
+      return next.handle();
+    }
 
     return next.handle().pipe(
       tap({

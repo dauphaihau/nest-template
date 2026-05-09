@@ -5,8 +5,9 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthenticatedUser } from '../../app/auth.types';
-import { AUTH_REQUIRED_PERMISSIONS_KEY } from '../rest/require-permissions.decorator';
+import { AUTH_REQUIRED_PERMISSIONS_KEY } from '../require-permissions.decorator';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -23,9 +24,7 @@ export class PermissionsGuard implements CanActivate {
       return true;
     }
 
-    const request = context
-      .switchToHttp()
-      .getRequest<{ user: AuthenticatedUser }>();
+    const request = this.getRequest(context);
     const currentUser = request.user;
 
     if (!currentUser) {
@@ -41,5 +40,18 @@ export class PermissionsGuard implements CanActivate {
     }
 
     return true;
+  }
+
+  private getRequest(context: ExecutionContext) {
+    const gqlContext = GqlExecutionContext.create(context);
+    const graphqlRequest = gqlContext.getContext<{
+      req?: { user?: AuthenticatedUser };
+    }>()?.req;
+
+    if (graphqlRequest) {
+      return graphqlRequest;
+    }
+
+    return context.switchToHttp().getRequest<{ user?: AuthenticatedUser }>();
   }
 }
