@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { AUTH_CONFIG } from '../../../config/auth.config';
-import type { AuthConfig } from '../../../config/auth.config';
+import { AUTH_CONFIG } from '../../../../config/auth.config';
+import type { AuthConfig } from '../../../../config/auth.config';
 import { LoadAuthenticatedUserUseCase } from '../app/use-cases/load-authenticated-user.use-case';
 import { AccessTokenPayload, AuthenticatedUser } from '../app/auth.types';
 

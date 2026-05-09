@@ -30,6 +30,7 @@ async function bootstrap() {
     new ClassSerializerInterceptor(app.get(Reflector)),
     new RequestLoggingInterceptor(),
   );
+
   await app.listen(process.env.PORT ?? 3000);
 }
 void bootstrap();

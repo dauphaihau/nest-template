@@ -2,18 +2,18 @@ import 'reflect-metadata';
 import { MikroORM } from '@mikro-orm/postgresql';
 import { ConfigService } from '@nestjs/config';
 import { buildAuthConfig } from '../src/config/auth.config';
-import { CurrentUserEntity } from '../src/modules/auth/infra/persistence/entities/current-user.entity';
-import { CurrentUserCredentialEntity } from '../src/modules/auth/infra/persistence/entities/current-user-credential.entity';
-import { EmailVerificationTokenEntity } from '../src/modules/auth/infra/persistence/entities/email-verification-token.entity';
-import { PermissionEntity } from '../src/modules/auth/infra/persistence/entities/permission.entity';
-import { PasswordResetTokenEntity } from '../src/modules/auth/infra/persistence/entities/password-reset-token.entity';
-import { RoleEntity } from '../src/modules/auth/infra/persistence/entities/role.entity';
-import { RolePermissionEntity } from '../src/modules/auth/infra/persistence/entities/role-permission.entity';
-import { UserRoleEntity } from '../src/modules/auth/infra/persistence/entities/user-role.entity';
-import { UserSessionEntity } from '../src/modules/auth/infra/persistence/entities/user-session.entity';
+import { CurrentUserEntity } from '../src/modules/domains/auth/infra/persistence/entities/current-user.entity';
+import { CurrentUserCredentialEntity } from '../src/modules/domains/auth/infra/persistence/entities/current-user-credential.entity';
+import { EmailVerificationTokenEntity } from '../src/modules/domains/auth/infra/persistence/entities/email-verification-token.entity';
+import { PermissionEntity } from '../src/modules/domains/auth/infra/persistence/entities/permission.entity';
+import { PasswordResetTokenEntity } from '../src/modules/domains/auth/infra/persistence/entities/password-reset-token.entity';
+import { RoleEntity } from '../src/modules/domains/auth/infra/persistence/entities/role.entity';
+import { RolePermissionEntity } from '../src/modules/domains/auth/infra/persistence/entities/role-permission.entity';
+import { UserRoleEntity } from '../src/modules/domains/auth/infra/persistence/entities/user-role.entity';
+import { UserSessionEntity } from '../src/modules/domains/auth/infra/persistence/entities/user-session.entity';
 import { buildDatabaseConfig } from '../src/config/database.config';
-import { UserStatus } from '../src/modules/auth/domain/enums/user-status.enum';
-import { BcryptPasswordHasher } from '../src/modules/auth/infra/security/bcrypt-password-hasher';
+import { UserStatus } from '../src/modules/domains/auth/domain/enums/user-status.enum';
+import { BcryptPasswordHasher } from '../src/modules/domains/auth/infra/security/bcrypt-password-hasher';
 
 const roles = [
   {

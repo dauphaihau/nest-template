@@ -11,7 +11,7 @@ import { AppModule } from '../src/modules/app.module';
 import type {
   AuthResponse,
   UserProfile,
-} from '../src/modules/auth/app/auth.types';
+} from '../src/modules/domains/auth/app/auth.types';
 import { createTestDatabase, dropTestDatabase } from './e2e-postgres';
 
 jest.setTimeout(30_000);

@@ -8,7 +8,7 @@ const positiveIntegerString = z
   .regex(/^\d+$/, 'Expected a positive integer value.')
   .refine((value) => Number(value) > 0, 'Expected a positive integer value.');
 
-const appEnvSchema = z.object({
+const appEnvBaseSchema = z.object({
   PORT: positiveIntegerString.default('3000'),
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
@@ -34,6 +34,20 @@ const appEnvSchema = z.object({
   JWT_ACCESS_TTL: z.string().trim().min(1),
   JWT_REFRESH_TTL: z.string().trim().min(1),
   BCRYPT_SALT_ROUNDS: positiveIntegerString.default('12'),
+  MAIL_DRIVER: z.enum(['logger', 'resend']).default('logger'),
+  MAIL_DEFAULT_FROM_EMAIL: z.email().default('noreply@example.com'),
+  MAIL_DEFAULT_FROM_NAME: z.string().trim().min(1).default('Nest Template'),
+  RESEND_API_KEY: z.string().trim().min(1).optional(),
+});
+
+const appEnvSchema = appEnvBaseSchema.superRefine((env, context) => {
+  if (env.MAIL_DRIVER === 'resend' && !env.RESEND_API_KEY) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['RESEND_API_KEY'],
+      message: 'Expected RESEND_API_KEY when MAIL_DRIVER is resend.',
+    });
+  }
 });
 
 export function validateAppEnv(env: AppEnv): AppEnv {

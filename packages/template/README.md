@@ -24,6 +24,10 @@ Default database settings:
 - `DB_PASSWORD=postgres`
 - `DB_NAME=app`
 - `BCRYPT_SALT_ROUNDS=12`
+- `MAIL_DRIVER=logger`
+- `MAIL_DEFAULT_FROM_EMAIL=noreply@example.com`
+- `MAIL_DEFAULT_FROM_NAME=Nest Template`
+- `RESEND_API_KEY=re_xxx` when `MAIL_DRIVER=resend`
 
 The Nest template uses MikroORM with PostgreSQL and reads its connection settings from the same env file.
 
@@ -33,7 +37,18 @@ The Nest template uses MikroORM with PostgreSQL and reads its connection setting
 
 ## Auth Module
 
-The template includes a JWT-based auth module with RBAC in [src/modules/auth](/Volumes/Local/dev/pj-personal/templates/api/nest-template/packages/template/src/modules/auth).
+The template includes a JWT-based auth module with RBAC in [src/modules/domains/auth](/Volumes/Local/dev/pj-personal/templates/api/nest-template/packages/template/src/modules/domains/auth).
+
+## Mail Module
+
+The template includes a reusable mail infrastructure module in [src/modules/infra/mail](/Volumes/Local/dev/pj-personal/templates/api/nest-template/packages/template/src/modules/infra/mail).
+
+Supported mail drivers:
+
+- `logger`
+- `resend`
+
+`RESEND_API_KEY` is required only when `MAIL_DRIVER=resend`.
 
 Auth/RBAC tables:
 

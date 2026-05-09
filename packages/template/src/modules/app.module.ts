@@ -3,8 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { validateAppEnv } from '../config/app-env.config';
 import { buildDatabaseConfig } from '../config/database.config';
-import { AuthModule } from './auth/auth.module';
-import { HealthModule } from './health/health.module';
+import { AuthModule } from './domains/auth/auth.module';
+import { HealthModule } from './domains/health/health.module';
+import { MailModule } from './infra/mail/mail.module';
 
 @Module({
   imports: [
@@ -16,6 +17,11 @@ import { HealthModule } from './health/health.module';
       ...buildDatabaseConfig(process.env),
       autoLoadEntities: true,
     }),
+
+    // infra
+    MailModule,
+
+    // domains
     AuthModule,
     HealthModule,
   ],
