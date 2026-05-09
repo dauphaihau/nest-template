@@ -6,6 +6,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 package_dir="$(cd "$script_dir/.." && pwd)"
 
 base_url="${API_BASE_URL:-http://127.0.0.1:3000/api}"
+graphql_url="${GRAPHQL_URL:-http://127.0.0.1:3000/graphql}"
 hurl_bin="${HURL_BIN:-hurl}"
 
 command="${1:-}"
@@ -29,6 +30,9 @@ register_ip="203.0.113.10"
 login_ip="203.0.113.11"
 refresh_ip="203.0.113.12"
 invalid_refresh_token="invalid-refresh-token-value-1234567890"
+user_id=""
+user_register_ip=""
+api_mode="rest"
 
 for arg in "$@"; do
   case "$arg" in
@@ -54,6 +58,14 @@ for arg in "$@"; do
       ;;
     --access-token=*|access_token=*|access-token=*)
       access_token="${arg#*=}"
+      collect_display_name="false"
+      ;;
+    --user-id=*|user_id=*|user-id=*)
+      user_id="${arg#*=}"
+      collect_display_name="false"
+      ;;
+    --api=*|api=*)
+      api_mode="${arg#*=}"
       collect_display_name="false"
       ;;
     --file=*|file=*)
@@ -90,6 +102,7 @@ run_hurl() {
 
   cmd+=(
     --variable "base_url=$base_url"
+    --variable "graphql_url=$graphql_url"
     "$@"
     "$hurl_file"
   )
@@ -107,6 +120,12 @@ ensure_rate_limit_variables() {
 
   if [[ -z "$missing_user_email" ]]; then
     missing_user_email="missing-$(uuidgen | tr 'A-Z' 'a-z')@example.com"
+  fi
+}
+
+ensure_user_graphql_variables() {
+  if [[ -z "$user_register_ip" ]]; then
+    user_register_ip="198.51.100.$(( (RANDOM % 200) + 1 ))"
   fi
 }
 
@@ -182,6 +201,71 @@ case "$command" in
       exit 1
     fi
     run_hurl "api/auth/me.hurl" --variable "access_token=$access_token"
+    ;;
+  user-test-all)
+    if [[ -z "$email" ]]; then
+      email="demo+$(uuidgen | tr 'A-Z' 'a-z')@example.com"
+    fi
+    ensure_user_graphql_variables
+    run_hurl \
+      "api/user/graphql/flows/user-queries.hurl" \
+      --variable "email=$email" \
+      --variable "password=$password" \
+      --variable "display_name=$display_name" \
+      --variable "register_ip=$user_register_ip"
+    ;;
+  user-by-id)
+    if [[ -z "$access_token" ]]; then
+      echo "missing --access-token=<token>" >&2
+      exit 1
+    fi
+    if [[ -z "$user_id" ]]; then
+      echo "missing --user-id=<id>" >&2
+      exit 1
+    fi
+    if [[ "$api_mode" == "graphql" ]]; then
+      run_hurl \
+        "api/user/graphql/user.hurl" \
+        --variable "access_token=$access_token" \
+        --variable "user_id=$user_id"
+    else
+      run_hurl \
+        "api/user/rest/user.hurl" \
+        --variable "access_token=$access_token" \
+        --variable "user_id=$user_id"
+    fi
+    ;;
+  user-rest-by-id)
+    if [[ -z "$access_token" ]]; then
+      echo "missing --access-token=<token>" >&2
+      exit 1
+    fi
+    if [[ -z "$user_id" ]]; then
+      echo "missing --user-id=<id>" >&2
+      exit 1
+    fi
+    run_hurl \
+      "api/user/rest/user.hurl" \
+      --variable "access_token=$access_token" \
+      --variable "user_id=$user_id"
+    ;;
+  users)
+    if [[ -z "$access_token" ]]; then
+      echo "missing --access-token=<token>" >&2
+      exit 1
+    fi
+    if [[ "$api_mode" == "graphql" ]]; then
+      run_hurl "api/user/graphql/users.hurl" --variable "access_token=$access_token"
+    else
+      run_hurl "api/user/rest/users.hurl" --variable "access_token=$access_token"
+    fi
+    ;;
+  users-rest)
+    if [[ -z "$access_token" ]]; then
+      echo "missing --access-token=<token>" >&2
+      exit 1
+    fi
+    run_hurl "api/user/rest/users.hurl" --variable "access_token=$access_token"
     ;;
   *)
     echo "unknown command: $command" >&2

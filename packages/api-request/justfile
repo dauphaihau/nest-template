@@ -11,3 +11,6 @@ auth *args:
 
 health *args:
   @{{ runner }} health {{ args }}
+
+user *args:
+  @{{ runner }} {{ args }}

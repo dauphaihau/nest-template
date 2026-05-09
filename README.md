@@ -23,6 +23,12 @@ Start local PostgreSQL:
 just infra-up
 ```
 
+Install template dependencies:
+
+```bash
+just template-install
+```
+
 Run the template in dev mode:
 
 ```bash
@@ -60,6 +66,7 @@ just api-health
 just api-request-run api/auth/register.hurl
 just api-auth test-all
 just api-auth test-rate-limit
+just api-user user-test-all
 ```
 
 Run template tests:

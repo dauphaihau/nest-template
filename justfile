@@ -9,6 +9,9 @@ infra-up:
 infra-down:
   docker compose -f {{ compose_file }} down
 
+template-install:
+  @cd {{ template_dir }} && pnpm install
+
 template-up environment='':
   env_file="{{ if environment == "" { ".env" } else { ".env." + environment } }}"; \
   cd {{ template_dir }} && \
@@ -66,3 +69,6 @@ api-auth *args:
 
 api-health:
   @cd {{ api_request_dir }} && just health
+
+api-user *args:
+  @cd {{ api_request_dir }} && just user {{ args }}
