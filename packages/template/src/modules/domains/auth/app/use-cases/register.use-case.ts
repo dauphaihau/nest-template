@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserCreatedEvent } from '../../../../../common/events/user-created.event';
 import {
   AuthResponse,
   RegisterUserInput,
@@ -25,6 +27,7 @@ export class RegisterUseCase {
     private readonly authUserRepository: AuthUserRepository,
     private readonly passwordHasher: PasswordHasher,
     private readonly issueSessionUseCase: IssueSessionUseCase,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(
@@ -52,6 +55,16 @@ export class RegisterUseCase {
 
     await this.authUserRepository.assignRole(user.id, defaultRole.key);
 
-    return this.issueSessionUseCase.execute(user.id, metadata);
+    const authResponse = await this.issueSessionUseCase.execute(
+      user.id,
+      metadata,
+    );
+
+    this.eventEmitter.emit(
+      'user.created',
+      new UserCreatedEvent(user.id, user.email.toString(), user.displayName),
+    );
+
+    return authResponse;
   }
 }
