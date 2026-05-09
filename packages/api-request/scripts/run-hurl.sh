@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+package_dir="$(cd "$script_dir/.." && pwd)"
+
+base_url="${API_BASE_URL:-http://127.0.0.1:3000/api}"
+hurl_bin="${HURL_BIN:-hurl}"
+
+command="${1:-}"
+if [[ -z "$command" ]]; then
+  echo "missing command" >&2
+  exit 1
+fi
+shift
+
+email=""
+password="password123"
+display_name="Demo User"
+refresh_token=""
+access_token=""
+verbose="false"
+file=""
+collect_display_name="false"
+
+for arg in "$@"; do
+  case "$arg" in
+    --email=*|email=*)
+      email="${arg#*=}"
+      collect_display_name="false"
+      ;;
+    --password=*|password=*)
+      password="${arg#*=}"
+      collect_display_name="false"
+      ;;
+    --display-name=*|display_name=*|display-name=*)
+      display_name="${arg#*=}"
+      collect_display_name="true"
+      ;;
+    --display-name|display_name|display-name)
+      display_name=""
+      collect_display_name="true"
+      ;;
+    --refresh-token=*|refresh_token=*|refresh-token=*)
+      refresh_token="${arg#*=}"
+      collect_display_name="false"
+      ;;
+    --access-token=*|access_token=*|access-token=*)
+      access_token="${arg#*=}"
+      collect_display_name="false"
+      ;;
+    --file=*|file=*)
+      file="${arg#*=}"
+      collect_display_name="false"
+      ;;
+    --verbose|--very-verbose)
+      verbose="true"
+      collect_display_name="false"
+      ;;
+    --*)
+      collect_display_name="false"
+      ;;
+    *)
+      if [[ "$collect_display_name" == "true" ]]; then
+        if [[ -n "$display_name" ]]; then
+          display_name="$display_name $arg"
+        else
+          display_name="$arg"
+        fi
+      fi
+      ;;
+  esac
+done
+
+run_hurl() {
+  local hurl_file="$1"
+  shift
+  local cmd=("$hurl_bin")
+
+  if [[ "$verbose" == "true" ]]; then
+    cmd+=(--very-verbose)
+  fi
+
+  cmd+=(
+    --variable "base_url=$base_url"
+    "$@"
+    "$hurl_file"
+  )
+
+  (
+    cd "$package_dir"
+    "${cmd[@]}"
+  )
+}
+
+case "$command" in
+  run)
+    if [[ -z "$file" ]]; then
+      echo "missing --file=<path>" >&2
+      exit 1
+    fi
+    run_hurl "$file"
+    ;;
+  health)
+    run_hurl "api/health/health.hurl"
+    ;;
+  test-all)
+    if [[ -z "$email" ]]; then
+      email="demo+$(uuidgen | tr 'A-Z' 'a-z')@example.com"
+    fi
+    run_hurl \
+      "api/auth/flows/full-auth-lifecycle.hurl" \
+      --variable "email=$email" \
+      --variable "password=$password" \
+      --variable "display_name=$display_name"
+    ;;
+  register)
+    if [[ -z "$email" ]]; then
+      email="demo+$(uuidgen | tr 'A-Z' 'a-z')@example.com"
+    fi
+    run_hurl \
+      "api/auth/register.hurl" \
+      --variable "email=$email" \
+      --variable "password=$password" \
+      --variable "display_name=$display_name"
+    ;;
+  login)
+    if [[ -z "$email" ]]; then
+      email="demo@example.com"
+    fi
+    run_hurl \
+      "api/auth/login.hurl" \
+      --variable "email=$email" \
+      --variable "password=$password"
+    ;;
+  refresh)
+    if [[ -z "$refresh_token" ]]; then
+      echo "missing --refresh-token=<token>" >&2
+      exit 1
+    fi
+    run_hurl "api/auth/refresh.hurl" --variable "refresh_token=$refresh_token"
+    ;;
+  logout)
+    if [[ -z "$access_token" ]]; then
+      echo "missing --access-token=<token>" >&2
+      exit 1
+    fi
+    run_hurl "api/auth/logout.hurl" --variable "access_token=$access_token"
+    ;;
+  me)
+    if [[ -z "$access_token" ]]; then
+      echo "missing --access-token=<token>" >&2
+      exit 1
+    fi
+    run_hurl "api/auth/me.hurl" --variable "access_token=$access_token"
+    ;;
+  *)
+    echo "unknown command: $command" >&2
+    exit 1
+    ;;
+esac

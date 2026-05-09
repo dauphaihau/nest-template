@@ -59,3 +59,6 @@ api-request-run file:
 
 api-auth *args:
   @cd {{ api_request_dir }} && just auth {{ args }}
+
+api-health:
+  @cd {{ api_request_dir }} && just health

@@ -1,4 +1,4 @@
-runner := "bash ./api/auth/scripts/run-auth-hurl.sh"
+runner := "bash ./scripts/run-hurl.sh"
 
 default:
   @just --list
@@ -8,3 +8,6 @@ run *args:
 
 auth *args:
   @{{ runner }} {{ args }}
+
+health *args:
+  @{{ runner }} health {{ args }}
