@@ -28,6 +28,9 @@ Default database settings:
 - `MAIL_DEFAULT_FROM_EMAIL=noreply@example.com`
 - `MAIL_DEFAULT_FROM_NAME=Nest Template`
 - `RESEND_API_KEY=re_xxx` when `MAIL_DRIVER=resend`
+- `STORAGE_DRIVER=local`
+- `STORAGE_LOCAL_ROOT=./storage`
+- `STORAGE_PUBLIC_BASE_URL=http://localhost:3000/storage` when you want public URLs
 
 The Nest template uses MikroORM with PostgreSQL and reads its connection settings from the same env file.
 
@@ -49,6 +52,18 @@ Supported mail drivers:
 - `resend`
 
 `RESEND_API_KEY` is required only when `MAIL_DRIVER=resend`.
+
+## Storage Module
+
+The template includes a reusable storage infrastructure module in [src/modules/infra/storage](/Volumes/Local/dev/pj-personal/templates/api/nest-template/packages/template/src/modules/infra/storage).
+
+Supported storage drivers:
+
+- `local`
+
+`STORAGE_LOCAL_ROOT` controls where files are written on disk.
+
+`STORAGE_PUBLIC_BASE_URL` is optional and is used to build stable public URLs for stored objects.
 
 Auth/RBAC tables:
 

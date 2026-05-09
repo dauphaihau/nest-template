@@ -38,6 +38,9 @@ const appEnvBaseSchema = z.object({
   MAIL_DEFAULT_FROM_EMAIL: z.email().default('noreply@example.com'),
   MAIL_DEFAULT_FROM_NAME: z.string().trim().min(1).default('Nest Template'),
   RESEND_API_KEY: z.string().trim().min(1).optional(),
+  STORAGE_DRIVER: z.enum(['local']).default('local'),
+  STORAGE_LOCAL_ROOT: z.string().trim().min(1).default('./storage'),
+  STORAGE_PUBLIC_BASE_URL: z.url().optional(),
 });
 
 const appEnvSchema = appEnvBaseSchema.superRefine((env, context) => {
