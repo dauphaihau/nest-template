@@ -11,6 +11,7 @@ infra-down:
 template-up environment='':
   env_file="{{ if environment == "" { ".env" } else { ".env." + environment } }}"; \
   cd {{ template_dir }} && \
+  if [ ! -f "$env_file" ] && [ "$env_file" = ".env" ] && [ -f ".env.example" ]; then cp ".env.example" "$env_file"; fi && \
   test -f "$env_file" && \
   set -a && \
   . "$env_file" && \
