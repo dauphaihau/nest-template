@@ -8,13 +8,13 @@ export class LogoutUseCase {
 
   async execute(currentUser: AuthenticatedUser): Promise<void> {
     const session = await this.authSessionRepository.findById(
-      currentUser.sessionId,
+      currentUser.sessionId
     );
 
     if (
-      !session ||
-      session.userId !== currentUser.userId ||
-      session.revokedAt
+      !session
+      || session.userId !== currentUser.userId
+      || session.revokedAt
     ) {
       return;
     }

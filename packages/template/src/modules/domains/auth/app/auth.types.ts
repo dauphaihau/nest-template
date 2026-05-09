@@ -1,4 +1,4 @@
-import { UserStatus } from '../domain/enums/user-status.enum';
+import type { UserStatus } from '../domain/enums/user-status.enum';
 
 export interface RequestMetadata {
   ipAddress?: string;

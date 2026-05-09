@@ -1,5 +1,7 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args, ID, Mutation, Query, Resolver 
+} from '@nestjs/graphql';
 import { CurrentUser } from '../../../auth/api/current-user.decorator';
 import { PermissionsGuard } from '../../../auth/api/guard/permissions.guard';
 import { RequirePermissions } from '../../../auth/api/require-permissions.decorator';
@@ -17,7 +19,7 @@ export class UserResolver {
   constructor(
     private readonly createUserUseCase: CreateUserUseCase,
     private readonly listUsersUseCase: ListUsersUseCase,
-    private readonly getUserByIdUseCase: GetUserByIdUseCase,
+    private readonly getUserByIdUseCase: GetUserByIdUseCase
   ) {}
 
   @Query(() => [UserType], { name: 'users' })
@@ -36,7 +38,7 @@ export class UserResolver {
   @RequirePermissions('users.manage')
   createUser(
     @CurrentUser() currentUser: AuthenticatedUser,
-    @Args('input') input: CreateUserInput,
+    @Args('input') input: CreateUserInput
   ) {
     return this.createUserUseCase.execute(currentUser, input);
   }

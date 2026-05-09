@@ -23,12 +23,12 @@ async function bootstrap() {
       whitelist: true,
       transform: true,
       forbidNonWhitelisted: true,
-    }),
+    })
   );
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalInterceptors(
     new ClassSerializerInterceptor(app.get(Reflector)),
-    new RequestLoggingInterceptor(),
+    new RequestLoggingInterceptor()
   );
 
   await app.listen(process.env.PORT ?? 3000);

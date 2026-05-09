@@ -1,16 +1,17 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import type { INestApplication } from '@nestjs/common';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import request from 'supertest';
-import { App } from 'supertest/types';
+import type { App } from 'supertest/types';
 import { GlobalExceptionFilter } from '../src/common/filters/global-exception.filter';
 import { RequestLoggingInterceptor } from '../src/common/interceptors/request-logging.interceptor';
 import { parseCorsAllowedOrigins } from '../src/config/cors.config';
 import { AppModule } from '../src/modules/app.module';
 import type {
   AuthResponse,
-  UserProfile,
+  UserProfile
 } from '../src/modules/domains/auth/app/auth.types';
 import { createTestDatabase, dropTestDatabase } from './e2e-postgres';
 
@@ -61,12 +62,12 @@ describe('Auth flow (e2e)', () => {
         whitelist: true,
         transform: true,
         forbidNonWhitelisted: true,
-      }),
+      })
     );
     app.useGlobalFilters(new GlobalExceptionFilter());
     app.useGlobalInterceptors(
       new ClassSerializerInterceptor(app.get(Reflector)),
-      new RequestLoggingInterceptor(),
+      new RequestLoggingInterceptor()
     );
     await app.init();
   });

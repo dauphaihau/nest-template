@@ -1,14 +1,14 @@
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { UserCreatedEvent } from '../../../../../common/events/user-created.event';
+import type { EventEmitter2 } from '@nestjs/event-emitter';
+import type { UserCreatedEvent } from '../../../../../common/events/user-created.event';
 import { UserStatus } from '../../domain/enums/user-status.enum';
 import type { UserAccount } from '../../domain/models/user-account';
 import { Email } from '../../domain/value-objects/email';
 import { PasswordHash } from '../../domain/value-objects/password-hash';
 import { RoleKey } from '../../domain/value-objects/role-key';
-import { AuthUserRepository } from '../ports/auth-user.repository';
-import { PasswordHasher } from '../ports/password-hasher';
+import type { AuthUserRepository } from '../ports/auth-user.repository';
+import type { PasswordHasher } from '../ports/password-hasher';
 import { RegisterUseCase } from './register.use-case';
-import { IssueSessionUseCase } from './shared/issue-session.use-case';
+import type { IssueSessionUseCase } from './shared/issue-session.use-case';
 
 describe('RegisterUseCase', () => {
   it('emits user.created after a successful registration', async () => {
@@ -18,7 +18,7 @@ describe('RegisterUseCase', () => {
       displayName: 'Member User',
       status: UserStatus.ACTIVE,
       passwordHash: PasswordHash.fromPersisted(
-        '$2b$04$123456789012345678901u8QTs4lJx0pK7ydjXfQ6PS/UPTzQ0zQG',
+        '$2b$04$123456789012345678901u8QTs4lJx0pK7ydjXfQ6PS/UPTzQ0zQG'
       ),
       passwordUpdatedAt: new Date('2026-01-01T00:00:00.000Z'),
       roles: [RoleKey.create('member')],
@@ -36,7 +36,7 @@ describe('RegisterUseCase', () => {
       hash: jest
         .fn()
         .mockResolvedValue(
-          '$2b$04$123456789012345678901u8QTs4lJx0pK7ydjXfQ6PS/UPTzQ0zQG',
+          '$2b$04$123456789012345678901u8QTs4lJx0pK7ydjXfQ6PS/UPTzQ0zQG'
         ),
       compare: jest.fn(),
     };
@@ -63,7 +63,7 @@ describe('RegisterUseCase', () => {
       authUserRepository,
       passwordHasher,
       issueSessionUseCase,
-      eventEmitter as EventEmitter2,
+      eventEmitter as EventEmitter2
     );
 
     await useCase.execute(
@@ -75,7 +75,7 @@ describe('RegisterUseCase', () => {
       {
         ipAddress: '127.0.0.1',
         userAgent: 'jest',
-      },
+      }
     );
 
     expect(eventEmitter.emit).toHaveBeenCalledWith(
@@ -84,7 +84,7 @@ describe('RegisterUseCase', () => {
         userId: 'user-1',
         email: 'member@example.com',
         displayName: 'Member User',
-      }),
+      })
     );
   });
 });

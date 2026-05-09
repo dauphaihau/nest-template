@@ -1,4 +1,4 @@
-import { UserStatus } from '../../auth/domain/enums/user-status.enum';
+import type { UserStatus } from '../../auth/domain/enums/user-status.enum';
 
 export interface UserSummary {
   id: string;
@@ -6,4 +6,3 @@ export interface UserSummary {
   displayName?: string;
   status: UserStatus;
 }
-

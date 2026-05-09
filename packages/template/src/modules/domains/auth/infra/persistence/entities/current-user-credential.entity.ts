@@ -1,4 +1,6 @@
-import { Entity, OneToOne, Property, Unique } from '@mikro-orm/core';
+import {
+  Entity, OneToOne, Property, Unique 
+} from '@mikro-orm/core';
 import { AbstractAuthEntity } from './abstract-auth.entity';
 import { CurrentUserEntity } from './current-user.entity';
 

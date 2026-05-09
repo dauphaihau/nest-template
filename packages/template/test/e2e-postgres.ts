@@ -31,7 +31,8 @@ export async function createTestDatabase(): Promise<TestDatabaseContext> {
 
   try {
     await adminClient.query(`CREATE DATABASE "${dbName}"`);
-  } finally {
+  }
+  finally {
     await adminClient.end();
   }
 
@@ -45,13 +46,14 @@ export async function createTestDatabase(): Promise<TestDatabaseContext> {
         DB_PASSWORD: rootConfig.password,
         DB_NAME: dbName,
       },
-      { includeEntityGlobs: true },
-    ),
+      { includeEntityGlobs: true }
+    )
   );
 
   try {
     await orm.getMigrator().up();
-  } finally {
+  }
+  finally {
     await orm.close(true);
   }
 
@@ -62,7 +64,7 @@ export async function createTestDatabase(): Promise<TestDatabaseContext> {
 }
 
 export async function dropTestDatabase(
-  context: TestDatabaseContext,
+  context: TestDatabaseContext
 ): Promise<void> {
   const adminClient = new Client({
     ...context.rootConfig,
@@ -78,10 +80,11 @@ export async function dropTestDatabase(
         FROM pg_stat_activity
         WHERE datname = $1 AND pid <> pg_backend_pid()
       `,
-      [context.dbName],
+      [context.dbName]
     );
     await adminClient.query(`DROP DATABASE IF EXISTS "${context.dbName}"`);
-  } finally {
+  }
+  finally {
     await adminClient.end();
   }
 }

@@ -1,4 +1,4 @@
 export {
   AUTH_REQUIRED_PERMISSIONS_KEY,
-  RequirePermissions,
+  RequirePermissions
 } from '../require-permissions.decorator';

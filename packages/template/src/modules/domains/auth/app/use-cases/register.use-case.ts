@@ -4,7 +4,7 @@ import { UserCreatedEvent } from '../../../../../common/events/user-created.even
 import {
   AuthResponse,
   RegisterUserInput,
-  RequestMetadata,
+  RequestMetadata
 } from '../auth.types';
 import { EmailAlreadyRegisteredError } from '../errors/auth-app.error';
 import { UserStatus } from '../../domain/enums/user-status.enum';
@@ -27,12 +27,12 @@ export class RegisterUseCase {
     private readonly authUserRepository: AuthUserRepository,
     private readonly passwordHasher: PasswordHasher,
     private readonly issueSessionUseCase: IssueSessionUseCase,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly eventEmitter: EventEmitter2
   ) {}
 
   async execute(
     input: RegisterUserInput,
-    metadata: RequestMetadata,
+    metadata: RequestMetadata
   ): Promise<AuthResponse> {
     const email = Email.create(input.email);
     const existingUser = await this.authUserRepository.findByEmail(email);
@@ -48,7 +48,7 @@ export class RegisterUseCase {
       displayName: input.displayName?.trim() || undefined,
       status: UserStatus.ACTIVE,
       passwordHash: PasswordHash.fromPersisted(
-        await this.passwordHasher.hash(input.password),
+        await this.passwordHasher.hash(input.password)
       ),
       passwordUpdatedAt: new Date(),
     });
@@ -57,12 +57,12 @@ export class RegisterUseCase {
 
     const authResponse = await this.issueSessionUseCase.execute(
       user.id,
-      metadata,
+      metadata
     );
 
     this.eventEmitter.emit(
       'user.created',
-      new UserCreatedEvent(user.id, user.email.toString(), user.displayName),
+      new UserCreatedEvent(user.id, user.email.toString(), user.displayName)
     );
 
     return authResponse;

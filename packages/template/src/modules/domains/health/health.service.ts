@@ -20,7 +20,7 @@ export interface HealthCheckResult {
 export class HealthService {
   constructor(
     private readonly entityManager: EntityManager,
-    private readonly storageService: StorageService,
+    private readonly storageService: StorageService
   ) {}
 
   async check(): Promise<HealthCheckResult> {
@@ -46,7 +46,8 @@ export class HealthService {
       return {
         status: 'ok',
       };
-    } catch (error) {
+    }
+    catch (error) {
       return {
         status: 'error',
         details: this.toErrorDetails(error),
@@ -61,7 +62,8 @@ export class HealthService {
       return {
         status: 'ok',
       };
-    } catch (error) {
+    }
+    catch (error) {
       return {
         status: 'error',
         details: this.toErrorDetails(error),

@@ -5,7 +5,7 @@ import {
   OneToMany,
   OneToOne,
   Property,
-  Unique,
+  Unique
 } from '@mikro-orm/core';
 import { AbstractAuthEntity } from './abstract-auth.entity';
 import { UserStatus } from '../../../domain/enums/user-status.enum';
@@ -36,7 +36,7 @@ export class CurrentUserEntity extends AbstractAuthEntity {
     {
       nullable: true,
       orphanRemoval: true,
-    },
+    }
   )
   credential?: CurrentUserCredentialEntity;
 

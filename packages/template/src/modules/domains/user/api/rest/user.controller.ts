@@ -5,7 +5,7 @@ import {
   NotFoundException,
   Param,
   Post,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { CurrentUser } from '../../../auth/api/rest/current-user.decorator';
 import { RequirePermissions } from '../../../auth/api/rest/require-permissions.decorator';
@@ -24,7 +24,7 @@ export class UserController {
   constructor(
     private readonly createUserUseCase: CreateUserUseCase,
     private readonly listUsersUseCase: ListUsersUseCase,
-    private readonly getUserByIdUseCase: GetUserByIdUseCase,
+    private readonly getUserByIdUseCase: GetUserByIdUseCase
   ) {}
 
   @Get()
@@ -49,7 +49,7 @@ export class UserController {
   @RequirePermissions('users.manage')
   createUser(
     @CurrentUser() currentUser: AuthenticatedUser,
-    @Body() body: CreateUserDto,
+    @Body() body: CreateUserDto
   ): Promise<UserSummary> {
     return this.createUserUseCase.execute(currentUser, body);
   }

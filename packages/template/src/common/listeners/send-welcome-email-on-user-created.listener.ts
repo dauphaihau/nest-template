@@ -6,7 +6,7 @@ import { UserCreatedEvent } from '../events/user-created.event';
 @Injectable()
 export class SendWelcomeEmailOnUserCreatedListener {
   private readonly logger = new Logger(
-    SendWelcomeEmailOnUserCreatedListener.name,
+    SendWelcomeEmailOnUserCreatedListener.name
   );
 
   constructor(private readonly mailSender: MailSender) {}

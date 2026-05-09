@@ -1,4 +1,4 @@
-import { ConfigService } from '@nestjs/config';
+import type { ConfigService } from '@nestjs/config';
 
 export interface StorageConfig {
   driver: 'local';
@@ -9,7 +9,7 @@ export interface StorageConfig {
 export const STORAGE_CONFIG = Symbol('STORAGE_CONFIG');
 
 export function buildStorageConfig(
-  configService: Pick<ConfigService, 'get'>,
+  configService: Pick<ConfigService, 'get'>
 ): StorageConfig {
   return {
     driver: configService.get<'local'>('STORAGE_DRIVER', 'local') ?? 'local',

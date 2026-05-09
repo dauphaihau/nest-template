@@ -1,6 +1,7 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import type { ExecutionContext } from '@nestjs/common';
+import { createParamDecorator } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { AuthenticatedUser } from '../app/auth.types';
+import type { AuthenticatedUser } from '../app/auth.types';
 
 export const CurrentUser = createParamDecorator(
   (_data: unknown, context: ExecutionContext): AuthenticatedUser => {
@@ -16,5 +17,5 @@ export const CurrentUser = createParamDecorator(
       .switchToHttp()
       .getRequest<{ user: AuthenticatedUser }>();
     return request.user;
-  },
+  }
 );

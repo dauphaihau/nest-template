@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AuthResponse, LoginUserInput, RequestMetadata } from '../auth.types';
 import {
   InactiveUserError,
-  InvalidCredentialsError,
+  InvalidCredentialsError
 } from '../errors/auth-app.error';
 import { UserStatus } from '../../domain/enums/user-status.enum';
 import { Email } from '../../domain/value-objects/email';
@@ -15,12 +15,12 @@ export class LoginUseCase {
   constructor(
     private readonly authUserRepository: AuthUserRepository,
     private readonly passwordHasher: PasswordHasher,
-    private readonly issueSessionUseCase: IssueSessionUseCase,
+    private readonly issueSessionUseCase: IssueSessionUseCase
   ) {}
 
   async execute(
     input: LoginUserInput,
-    metadata: RequestMetadata,
+    metadata: RequestMetadata
   ): Promise<AuthResponse> {
     const email = Email.create(input.email);
     const user = await this.authUserRepository.findByEmail(email);
@@ -35,7 +35,7 @@ export class LoginUseCase {
 
     const passwordMatches = await this.passwordHasher.matches(
       input.password,
-      user.passwordHash.toString(),
+      user.passwordHash.toString()
     );
 
     if (!passwordMatches) {

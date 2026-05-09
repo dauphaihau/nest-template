@@ -6,7 +6,7 @@ import {
   Post,
   Req,
   UseFilters,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
@@ -14,7 +14,7 @@ import { parseDurationToMilliseconds } from '../../../../../libs/duration';
 import type {
   AuthResponse,
   AuthenticatedUser,
-  UserProfile,
+  UserProfile
 } from '../../app/auth.types';
 import { GetCurrentUserUseCase } from '../../app/use-cases/get-current-user.use-case';
 import { LoginUseCase } from '../../app/use-cases/login.use-case';
@@ -55,7 +55,7 @@ export class AuthController {
     private readonly loginUseCase: LoginUseCase,
     private readonly refreshSessionUseCase: RefreshSessionUseCase,
     private readonly logoutUseCase: LogoutUseCase,
-    private readonly getCurrentUserUseCase: GetCurrentUserUseCase,
+    private readonly getCurrentUserUseCase: GetCurrentUserUseCase
   ) {}
 
   @Post('register')
@@ -64,7 +64,7 @@ export class AuthController {
   })
   async register(
     @Body() body: RegisterDto,
-    @Req() request: Request,
+    @Req() request: Request
   ): Promise<AuthResponse> {
     return this.registerUseCase.execute(body, extractRequestMetadata(request));
   }
@@ -76,7 +76,7 @@ export class AuthController {
   @HttpCode(200)
   async login(
     @Body() body: LoginDto,
-    @Req() request: Request,
+    @Req() request: Request
   ): Promise<AuthResponse> {
     return this.loginUseCase.execute(body, extractRequestMetadata(request));
   }
@@ -88,11 +88,11 @@ export class AuthController {
   @HttpCode(200)
   async refresh(
     @Body() body: RefreshTokenDto,
-    @Req() request: Request,
+    @Req() request: Request
   ): Promise<AuthResponse> {
     return this.refreshSessionUseCase.execute(
       body.refreshToken,
-      extractRequestMetadata(request),
+      extractRequestMetadata(request)
     );
   }
 
@@ -106,7 +106,7 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   async me(
-    @CurrentUser() currentUser: AuthenticatedUser,
+    @CurrentUser() currentUser: AuthenticatedUser
   ): Promise<UserProfile> {
     return this.getCurrentUserUseCase.execute(currentUser);
   }

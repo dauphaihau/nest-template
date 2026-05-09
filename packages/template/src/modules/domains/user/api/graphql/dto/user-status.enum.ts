@@ -6,4 +6,3 @@ registerEnumType(UserStatus, {
 });
 
 export { UserStatus };
-

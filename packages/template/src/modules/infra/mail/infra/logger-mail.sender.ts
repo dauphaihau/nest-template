@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { MailConfig } from '../../../../config/mail.config';
-import { MailSender } from '../app/ports/mail-sender';
-import { MailAddress, SendMailInput } from '../app/mail.types';
+import type { MailSender } from '../app/ports/mail-sender';
+import type { MailAddress, SendMailInput } from '../app/mail.types';
 
 export class LoggerMailSender implements MailSender {
   private readonly logger = new Logger(LoggerMailSender.name);
@@ -25,12 +25,12 @@ export class LoggerMailSender implements MailSender {
     };
 
     this.logger.log(
-      `Mail queued via logger transport: ${JSON.stringify(payload)}`,
+      `Mail queued via logger transport: ${JSON.stringify(payload)}`
     );
   }
 
   private formatAddresses(
-    value?: MailAddress | MailAddress[],
+    value?: MailAddress | MailAddress[]
   ): string[] | undefined {
     if (!value) {
       return undefined;

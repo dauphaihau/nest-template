@@ -19,9 +19,9 @@ const appEnvBaseSchema = z.object({
     .trim()
     .refine(
       (value) =>
-        value.length === 0 ||
-        value.split(',').every((segment) => segment.trim().length > 0),
-      'Expected a comma-separated list without empty entries.',
+        value.length === 0
+        || value.split(',').every((segment) => segment.trim().length > 0),
+      'Expected a comma-separated list without empty entries.'
     )
     .optional(),
   DB_HOST: z.string().trim().min(1),

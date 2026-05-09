@@ -10,7 +10,7 @@ type DatabaseEnv = Partial<
 
 export function buildDatabaseConfig(
   env: DatabaseEnv,
-  options?: { includeEntityGlobs?: boolean },
+  options?: { includeEntityGlobs?: boolean }
 ): Options<PostgreSqlDriver> {
   const includeEntityGlobs = options?.includeEntityGlobs ?? false;
 
@@ -24,9 +24,9 @@ export function buildDatabaseConfig(
     debug: env.NODE_ENV !== 'production',
     ...(includeEntityGlobs
       ? {
-          entities: ['dist/**/*.entity.js'],
-          entitiesTs: ['src/**/*.entity.ts'],
-        }
+        entities: ['dist/**/*.entity.js'],
+        entitiesTs: ['src/**/*.entity.ts'],
+      }
       : {}),
     migrations: {
       path: 'dist/database/migrations',

@@ -9,4 +9,3 @@ export class ListUsersUseCase {
     return this.userRepository.findAll();
   }
 }
-

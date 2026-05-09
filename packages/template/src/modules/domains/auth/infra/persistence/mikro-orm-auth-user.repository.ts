@@ -2,7 +2,7 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import {
   AuthUserRepository,
-  CreateUserAccountInput,
+  CreateUserAccountInput
 } from '../../app/ports/auth-user.repository';
 import type { RoleDefinition } from '../../domain/models/role-definition';
 import type { UserAccount } from '../../domain/models/user-account';
@@ -23,7 +23,7 @@ export class MikroOrmAuthUserRepository implements AuthUserRepository {
     const userRepository = this.entityManager.fork().getRepository(CurrentUserEntity);
     const user = await userRepository.findOne(
       { email: email.toString() },
-      { populate: ['credential', 'userRoles.role.rolePermissions.permission'] },
+      { populate: ['credential', 'userRoles.role.rolePermissions.permission'] }
     );
 
     return user ? this.toUserAccount(user) : null;
@@ -33,7 +33,7 @@ export class MikroOrmAuthUserRepository implements AuthUserRepository {
     const userRepository = this.entityManager.fork().getRepository(CurrentUserEntity);
     const user = await userRepository.findOne(
       { id },
-      { populate: ['credential', 'userRoles.role.rolePermissions.permission'] },
+      { populate: ['credential', 'userRoles.role.rolePermissions.permission'] }
     );
 
     return user ? this.toUserAccount(user) : null;
@@ -43,7 +43,7 @@ export class MikroOrmAuthUserRepository implements AuthUserRepository {
     const entityManager = this.entityManager.fork();
     const userRepository = entityManager.getRepository(CurrentUserEntity);
     const credentialRepository = entityManager.getRepository(
-      CurrentUserCredentialEntity,
+      CurrentUserCredentialEntity
     );
     const user = userRepository.create({
       email: input.email.toString(),
@@ -121,9 +121,9 @@ export class MikroOrmAuthUserRepository implements AuthUserRepository {
           userRole.role.rolePermissions.getItems().map((rolePermission) => {
             const key = PermissionKey.create(rolePermission.permission.key);
             return [key.toString(), key] as const;
-          }),
-        ),
-      ).values(),
+          })
+        )
+      ).values()
     ).sort((left, right) => left.toString().localeCompare(right.toString()));
 
     return {

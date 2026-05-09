@@ -58,4 +58,3 @@ export class RefreshTokenMismatchError extends AuthAppError {
     super('Refresh token does not match session');
   }
 }
-

@@ -9,4 +9,3 @@ export class GetUserByIdUseCase {
     return this.userRepository.findById(id);
   }
 }
-

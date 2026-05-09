@@ -1,4 +1,4 @@
-import { UserStatus } from '../../domain/enums/user-status.enum';
+import type { UserStatus } from '../../domain/enums/user-status.enum';
 import type { RoleDefinition } from '../../domain/models/role-definition';
 import type { UserAccount } from '../../domain/models/user-account';
 import type { Email } from '../../domain/value-objects/email';

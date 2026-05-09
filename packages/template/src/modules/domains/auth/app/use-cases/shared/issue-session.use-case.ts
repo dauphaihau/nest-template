@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import {
   AuthResponse,
   AuthenticatedUser,
-  RequestMetadata,
+  RequestMetadata
 } from '../../auth.types';
 import {
   InactiveUserError,
-  UserNotFoundError,
+  UserNotFoundError
 } from '../../errors/auth-app.error';
 import { UserStatus } from '../../../domain/enums/user-status.enum';
 import type { UserSession } from '../../../domain/models/user-session';
@@ -21,13 +21,13 @@ export class IssueSessionUseCase {
     private readonly authUserRepository: AuthUserRepository,
     private readonly authSessionRepository: AuthSessionRepository,
     private readonly authTokenService: AuthTokenService,
-    private readonly tokenHasher: TokenHasher,
+    private readonly tokenHasher: TokenHasher
   ) {}
 
   async execute(
     userId: string,
     metadata: RequestMetadata,
-    existingSession?: UserSession,
+    existingSession?: UserSession
   ): Promise<AuthResponse> {
     const user = await this.authUserRepository.findById(userId);
 

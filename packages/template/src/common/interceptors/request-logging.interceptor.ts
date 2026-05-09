@@ -3,7 +3,7 @@ import {
   ExecutionContext,
   Injectable,
   Logger,
-  NestInterceptor,
+  NestInterceptor
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { Observable } from 'rxjs';
@@ -27,15 +27,15 @@ export class RequestLoggingInterceptor implements NestInterceptor {
       tap({
         next: () => {
           this.logger.log(
-            `${request.method} ${request.url} ${response.statusCode} ${Date.now() - startedAt}ms`,
+            `${request.method} ${request.url} ${response.statusCode} ${Date.now() - startedAt}ms`
           );
         },
         error: () => {
           this.logger.warn(
-            `${request.method} ${request.url} ${response.statusCode} ${Date.now() - startedAt}ms`,
+            `${request.method} ${request.url} ${response.statusCode} ${Date.now() - startedAt}ms`
           );
         },
-      }),
+      })
     );
   }
 }

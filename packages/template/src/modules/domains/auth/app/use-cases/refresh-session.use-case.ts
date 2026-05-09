@@ -6,7 +6,7 @@ import {
   RefreshSessionInactiveError,
   RefreshSessionNotFoundError,
   RefreshTokenMismatchError,
-  UserNotFoundError,
+  UserNotFoundError
 } from '../errors/auth-app.error';
 import { UserStatus } from '../../domain/enums/user-status.enum';
 import { AuthSessionRepository } from '../ports/auth-session.repository';
@@ -22,12 +22,12 @@ export class RefreshSessionUseCase {
     private readonly authTokenService: AuthTokenService,
     private readonly tokenHasher: TokenHasher,
     private readonly authUserRepository: AuthUserRepository,
-    private readonly issueSessionUseCase: IssueSessionUseCase,
+    private readonly issueSessionUseCase: IssueSessionUseCase
   ) {}
 
   async execute(
     refreshToken: string,
-    metadata: RequestMetadata,
+    metadata: RequestMetadata
   ): Promise<AuthResponse> {
     const payload =
       await this.authTokenService.verifyRefreshToken(refreshToken);
@@ -37,7 +37,7 @@ export class RefreshSessionUseCase {
     }
 
     const session = await this.authSessionRepository.findById(
-      payload.sessionId,
+      payload.sessionId
     );
 
     if (!session || session.userId !== payload.sub) {

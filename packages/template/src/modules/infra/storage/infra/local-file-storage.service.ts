@@ -1,8 +1,10 @@
-import { access, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import {
+  access, mkdir, readFile, rm, stat, writeFile 
+} from 'node:fs/promises';
 import path from 'node:path';
 import type { StorageConfig } from '../../../../config/storage.config';
-import { StorageService } from '../app/ports/storage.service';
-import { PutStorageObjectInput, StoredObject } from '../app/storage.types';
+import type { StorageService } from '../app/ports/storage.service';
+import type { PutStorageObjectInput, StoredObject } from '../app/storage.types';
 
 export class LocalFileStorageService implements StorageService {
   private readonly rootPath: string;
@@ -43,7 +45,8 @@ export class LocalFileStorageService implements StorageService {
     try {
       const fileStat = await stat(this.resolveFilePath(key));
       return fileStat.isFile();
-    } catch {
+    }
+    catch {
       return false;
     }
   }
@@ -92,7 +95,7 @@ export class LocalFileStorageService implements StorageService {
     for (const segment of segments) {
       if (segment.length === 0 || segment === '.' || segment === '..') {
         throw new Error(
-          `Storage key "${key}" contains an invalid path segment.`,
+          `Storage key "${key}" contains an invalid path segment.`
         );
       }
     }

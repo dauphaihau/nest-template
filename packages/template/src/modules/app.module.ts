@@ -4,7 +4,6 @@ import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { GraphQLModule } from '@nestjs/graphql';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { join } from 'node:path';
 import { SendWelcomeEmailOnUserCreatedListener } from '../common/listeners/send-welcome-email-on-user-created.listener';
 import { validateAppEnv } from '../config/app-env.config';
 import { buildDatabaseConfig } from '../config/database.config';

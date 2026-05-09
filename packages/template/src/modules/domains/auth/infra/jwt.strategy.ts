@@ -10,7 +10,7 @@ import { AccessTokenPayload, AuthenticatedUser } from '../app/auth.types';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     @Inject(AUTH_CONFIG) authConfig: AuthConfig,
-    private readonly loadAuthenticatedUserUseCase: LoadAuthenticatedUserUseCase,
+    private readonly loadAuthenticatedUserUseCase: LoadAuthenticatedUserUseCase
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: AccessTokenPayload): Promise<AuthenticatedUser> {
     return this.loadAuthenticatedUserUseCase.execute(
       payload.sub,
-      payload.sessionId,
+      payload.sessionId
     );
   }
 }

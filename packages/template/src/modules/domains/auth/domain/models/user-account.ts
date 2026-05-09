@@ -1,4 +1,4 @@
-import { UserStatus } from '../enums/user-status.enum';
+import type { UserStatus } from '../enums/user-status.enum';
 import type { Email } from '../value-objects/email';
 import type { PasswordHash } from '../value-objects/password-hash';
 import type { PermissionKey } from '../value-objects/permission-key';

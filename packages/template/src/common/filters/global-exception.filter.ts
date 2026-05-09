@@ -4,7 +4,7 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
-  Logger,
+  Logger
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 
@@ -31,7 +31,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (statusCode >= 500) {
       this.logger.error(
         `${request.method} ${request.url} failed with ${statusCode}`,
-        exception instanceof Error ? exception.stack : undefined,
+        exception instanceof Error ? exception.stack : undefined
       );
     }
 
@@ -42,7 +42,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 function buildErrorResponse(
   exception: unknown,
   statusCode: number,
-  path: string,
+  path: string
 ) {
   const baseResponse = {
     statusCode,
@@ -82,8 +82,8 @@ function buildErrorResponse(
           ? responsePayload.error
           : exception.name,
       message:
-        typeof responsePayload.message === 'string' ||
-        Array.isArray(responsePayload.message)
+        typeof responsePayload.message === 'string'
+        || Array.isArray(responsePayload.message)
           ? responsePayload.message
           : exception.message,
     };

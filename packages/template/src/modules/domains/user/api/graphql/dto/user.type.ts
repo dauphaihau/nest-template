@@ -15,4 +15,3 @@ export class UserType {
   @Field(() => UserStatus)
   status!: UserStatus;
 }
-

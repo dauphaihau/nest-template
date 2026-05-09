@@ -1,4 +1,4 @@
-import { PutStorageObjectInput, StoredObject } from '../storage.types';
+import type { PutStorageObjectInput, StoredObject } from '../storage.types';
 
 export abstract class StorageService {
   abstract putObject(input: PutStorageObjectInput): Promise<StoredObject>;

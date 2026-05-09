@@ -7,14 +7,14 @@ import { AuthTokenService } from '../../app/ports/auth-token.service';
 import {
   AccessTokenPayload,
   AuthenticatedUser,
-  RefreshTokenPayload,
+  RefreshTokenPayload
 } from '../../app/auth.types';
 
 @Injectable()
 export class JwtAuthTokenService implements AuthTokenService {
   constructor(
     private readonly jwtService: JwtService,
-    @Inject(AUTH_CONFIG) private readonly authConfig: AuthConfig,
+    @Inject(AUTH_CONFIG) private readonly authConfig: AuthConfig
   ) {}
 
   issueAccessToken(user: AuthenticatedUser): Promise<string> {
@@ -48,7 +48,7 @@ export class JwtAuthTokenService implements AuthTokenService {
   }
 
   async verifyRefreshToken(
-    token: string,
+    token: string
   ): Promise<(RefreshTokenPayload & { exp: number }) | null> {
     try {
       return await this.jwtService.verifyAsync<
@@ -56,7 +56,8 @@ export class JwtAuthTokenService implements AuthTokenService {
       >(token, {
         secret: this.authConfig.jwtRefreshSecret,
       });
-    } catch {
+    }
+    catch {
       return null;
     }
   }
@@ -66,7 +67,8 @@ export class JwtAuthTokenService implements AuthTokenService {
       return await this.jwtService.verifyAsync<AccessTokenPayload>(token, {
         secret: this.authConfig.jwtAccessSecret,
       });
-    } catch {
+    }
+    catch {
       return null;
     }
   }
