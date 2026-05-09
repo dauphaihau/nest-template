@@ -156,7 +156,7 @@ case "$command" in
     ;;
   login)
     if [[ -z "$email" ]]; then
-      email="demo@example.com"
+      email="admin@example.com"
     fi
     run_hurl \
       "api/auth/login.hurl" \

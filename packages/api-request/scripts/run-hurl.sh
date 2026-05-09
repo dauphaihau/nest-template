@@ -174,7 +174,7 @@ case "$command" in
     ;;
   login)
     if [[ -z "$email" ]]; then
-      email="demo@example.com"
+      email="admin@example.com"
     fi
     run_hurl \
       "api/auth/login.hurl" \
@@ -248,6 +248,30 @@ case "$command" in
       "api/user/rest/user.hurl" \
       --variable "access_token=$access_token" \
       --variable "user_id=$user_id"
+    ;;
+  create-user)
+    if [[ -z "$access_token" ]]; then
+      echo "missing --access-token=<token>" >&2
+      exit 1
+    fi
+    if [[ -z "$email" ]]; then
+      email="user+$(uuidgen | tr 'A-Z' 'a-z')@example.com"
+    fi
+    if [[ "$api_mode" == "graphql" ]]; then
+      run_hurl \
+        "api/user/graphql/create-user.hurl" \
+        --variable "access_token=$access_token" \
+        --variable "email=$email" \
+        --variable "password=$password" \
+        --variable "display_name=$display_name"
+    else
+      run_hurl \
+        "api/user/rest/create-user.hurl" \
+        --variable "access_token=$access_token" \
+        --variable "email=$email" \
+        --variable "password=$password" \
+        --variable "display_name=$display_name"
+    fi
     ;;
   users)
     if [[ -z "$access_token" ]]; then
