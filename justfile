@@ -1,6 +1,7 @@
 compose_file := "infra/docker-compose.yml"
 template_dir := "packages/template"
 api_request_dir := "packages/api-request"
+mcp_dir := "packages/mcp"
 
 infra-up:
   docker compose -f {{ compose_file }} up -d
@@ -53,6 +54,9 @@ template-migration-create environment='':
   . "$env_file" && \
   set +a && \
   pnpm db:migration:create
+
+mcp-up:
+  @cd {{ mcp_dir }} && pnpm start
 
 api-request-run file:
   @cd {{ api_request_dir }} && just run --file="{{ file }}"

@@ -6,6 +6,8 @@ This repository is a single git workspace for the Nest template, local infra, an
 
 - `infra/`
   Local infrastructure, currently PostgreSQL via Docker Compose.
+- `packages/mcp/`
+  Stdio MCP server that reuses the template auth and health modules.
 - `packages/template/`
   The NestJS application template with auth, MikroORM, migrations, and tests.
 - `packages/api-request/`
@@ -25,6 +27,18 @@ Run the template in dev mode:
 
 ```bash
 just template-up
+```
+
+Run the MCP server:
+
+```bash
+just mcp-up
+```
+
+Launch Codex with this project's MCP only:
+
+```bash
+./scripts/codex-with-mcp.sh
 ```
 
 Apply template migrations:
@@ -61,3 +75,5 @@ pnpm test:e2e
 - The root repository owns the full workspace history.
 - `packages/template/` is no longer a standalone git repository.
 - The auth e2e test suite creates and destroys its own temporary PostgreSQL database per run, but still expects the local PostgreSQL service to be available.
+- `packages/mcp/` loads environment variables from `packages/template/.env` by default so it stays aligned with the HTTP template configuration.
+- `scripts/codex-with-mcp.sh` injects the `nest-template` MCP server only for Codex sessions started from this repository.
